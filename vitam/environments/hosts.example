@@ -1,0 +1,411 @@
+# Group definition ; DO NOT MODIFY
+[hosts]
+
+# Group definition ; DO NOT MODIFY
+[hosts:children]
+vitam
+reverse
+hosts_dev_tools
+ldap
+
+########### Tests environments specifics ###########
+
+# EXTRA : Front reverse-proxy (test environments ONLY) ; add machine name after
+[reverse]
+# optional : after machine, if this machine is different from VITAM machines, you can specify another become user
+# Example
+# vitam-centos-01.vitam ansible_ssh_user=centos
+
+
+[ldap] # Extra : OpenLDAP server
+# LDAP server !!! NOT FOR PRODUCTION !!! Test only
+
+
+[library]
+# TODO: Put here servers where this service will be deployed : library
+
+
+[hosts_dev_tools]
+# TODO: Put here servers where this service will be deployed : mongo-express, elasticsearch-head
+
+
+[elasticsearch:children] # EXTRA : elasticsearch
+hosts_elasticsearch_data
+hosts_elasticsearch_log
+
+########### VITAM services ###########
+
+# Group definition ; DO NOT MODIFY
+[vitam:children]
+zone_external
+zone_access
+zone_applicative
+zone_storage
+zone_data
+zone_admin
+library
+
+##### Zone externe
+[zone_external:children]
+hosts_ihm_demo
+hosts_ihm_recette
+
+[hosts_ihm_demo]
+# TODO: Put here servers where this service will be deployed : ihm-demo. If you own another frontend, it is recommended to leave this group blank
+# If you don't need consul for ihm-demo, you can set this var after each hostname :
+# consul_disabled=true
+
+
+[hosts_ihm_recette]
+# TODO: Put here servers where this service will be deployed : ihm-recette (extra feature)
+
+
+##### Zone access
+
+# Group definition ; DO NOT MODIFY
+[zone_access:children]
+hosts_ingest_external
+hosts_access_external
+
+[hosts_ingest_external]
+# TODO: Put here servers where this service will be deployed : ingest-external
+
+
+[hosts_access_external]
+# TODO: Put here servers where this service will be deployed : access-external
+
+
+##### Zone applicative
+
+# Group definition ; DO NOT MODIFY
+[zone_applicative:children]
+hosts_ingest_internal
+hosts_processing
+hosts_batch_report
+hosts_worker
+hosts_access_internal
+hosts_metadata
+hosts_functional_administration
+hosts_logbook
+hosts_workspace
+hosts_storage_engine
+hosts_security_internal
+
+[hosts_security_internal]
+# TODO: Put here servers where this service will be deployed : security-internal
+
+
+[hosts_logbook]
+# TODO: Put here servers where this service will be deployed : logbook
+
+
+[hosts_workspace]
+# TODO: Put the server where this service will be deployed : workspace
+# WARNING: put only one server for this service, not more !
+
+
+[hosts_ingest_internal]
+# TODO: Put here servers where this service will be deployed : ingest-internal
+
+
+[hosts_access_internal]
+# TODO: Put here servers where this service will be deployed : access-internal
+
+
+[hosts_metadata]
+# TODO: Put here servers where this service will be deployed : metadata
+
+
+[hosts_functional_administration]
+# TODO: Put here servers where this service will be deployed : functional-administration
+
+
+[hosts_processing]
+# TODO: Put the server where this service will be deployed : processing
+# WARNING: put only one server for this service, not more !
+
+
+[hosts_storage_engine]
+# TODO: Put here servers where this service will be deployed : storage-engine
+
+
+[hosts_batch_report]
+# TODO: Put here servers where this service will be deployed : batch-report
+
+
+[hosts_worker]
+# TODO: Put here servers where this service will be deployed : worker
+# Optional parameter after each host : vitam_worker_capacity=<integer> ; please refer to your infrastructure for defining this number ; default is ansible_processor_vcpus value (cpu number in /proc/cpuinfo file)
+
+
+##### Zone storage
+
+[zone_storage:children] # DO NOT MODIFY
+hosts_storage_offer_default
+hosts_mongodb_offer
+
+[hosts_storage_offer_default]
+# TODO: Put here servers where this service will be deployed : storage-offer-default
+# LIMIT : only 1 offer per machine
+# LIMIT and 1 machine per offer when filesystem or filesystem-hash provider
+# Possibility to declare multiple machines with same provider only when provider is s3 or swift.
+# Mandatory param for each offer is offer_conf and points to offer_opts.yml & vault-vitam.yml (with same tree)
+# for swift
+# hostname-offre-1.vitam offer_conf=offer-swift-1
+# hostname-offre-2.vitam offer_conf=offer-swift-1
+# for filesystem
+# hostname-offre-2.vitam offer_conf=offer-fs-1
+# for s3
+# hostname-offre-3.vitam offer_conf=offer-s3-1
+# hostname-offre-4.vitam offer_conf=offer-s3-1
+
+
+[hosts_mongodb_offer:children]
+hosts_mongos_offer
+hosts_mongoc_offer
+hosts_mongod_offer
+
+[hosts_mongos_offer]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongos_data]
+# TODO: put here servers where this service will be deployed : mongos cluster for storage offers
+# Mandatory params
+#  - mongo_cluster_name=<offer_name> ; name of the cluster (should exist on vitam_strategy configuration in offer_opts.yml)
+# The recommended practice is to install the mongos instance on the same servers as the mongoc instances
+# Example
+# vitam-mongo-swift-offer-01   mongo_cluster_name=offer-swift-1
+# vitam-mongo-swift-offer-02   mongo_cluster_name=offer-swift-1
+# vitam-mongo-fs-offer-01      mongo_cluster_name=offer-fs-1
+# vitam-mongo-fs-offer-02      mongo_cluster_name=offer-fs-1
+# vitam-mongo-s3-offer-01      mongo_cluster_name=offer-s3-1
+# vitam-mongo-s3-offer-02      mongo_cluster_name=offer-s3-1
+
+
+[hosts_mongoc_offer]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongoc_data]
+# TODO: put here servers where this service will be deployed : mongoc cluster for storage offers
+# Mandatory params
+#  - mongo_cluster_name=<offer_name> ; name of the cluster (should exist on vitam_strategy configuration in offer_opts.yml)
+# Optional params
+#  - mongo_rs_bootstrap=true ; mandatory for 1 node, some init commands will be executed on it
+#  - mongo_arbiter=true ; the node will be only an arbiter, do not add this parameter on a mongo_rs_bootstrap node
+# The recommended practice is to install the mongoc instance on the same servers as the mongos instances
+# Recommended practice in production: use 3 instances
+# Example :
+# vitam-mongo-swift-offer-01   mongo_cluster_name=offer-swift-1   mongo_rs_bootstrap=true
+# vitam-mongo-swift-offer-02   mongo_cluster_name=offer-swift-1
+# vitam-swift-offer            mongo_cluster_name=offer-swift-1   mongo_arbiter=true
+# vitam-mongo-fs-offer-01      mongo_cluster_name=offer-fs-1      mongo_rs_bootstrap=true
+# vitam-mongo-fs-offer-02      mongo_cluster_name=offer-fs-1
+# vitam-fs-offer               mongo_cluster_name=offer-fs-1      mongo_arbiter=true
+# vitam-mongo-s3-offer-01      mongo_cluster_name=offer-s3-1      mongo_rs_bootstrap=true
+# vitam-mongo-s3-offer-02      mongo_cluster_name=offer-s3-1
+# vitam-s3-offer               mongo_cluster_name=offer-s3-1      mongo_arbiter=true
+
+
+[hosts_mongod_offer]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongod_data]
+# TODO: put here servers where this service will be deployed : mongod cluster for storage offers
+# Mandatory params
+#  - mongo_cluster_name=<offer_name> ; name of the cluster (should exist on vitam_strategy configuration in offer_opts.yml)
+#  - mongo_shard_id=x ; increment by 1 from 0 to n
+# Optional params
+#  - mongo_rs_bootstrap=true ; mandatory for 1 node of the shard, some init commands will be executed on it
+#  - mongo_arbiter=true ; the node will be only an arbiter, do not add this parameter on a mongo_rs_bootstrap node
+#  - mongod_memory=x ; this will force the wiredtiger cache size to x (unit is GB)
+#  - is_small=true ; this will force the priority for this server to be lower when electing master ; hardware can be downgraded for this machine
+# Recommended practice in production: use 3 instances per shard
+# Example :
+# vitam-mongo-swift-offer-01   mongo_cluster_name=offer-swift-1   mongo_shard_id=0   mongo_rs_bootstrap=true
+# vitam-mongo-swift-offer-02   mongo_cluster_name=offer-swift-1   mongo_shard_id=0
+# vitam-swift-offer            mongo_cluster_name=offer-swift-1   mongo_shard_id=0   mongo_arbiter=true
+# vitam-mongo-fs-offer-01      mongo_cluster_name=offer-fs-1      mongo_shard_id=0   mongo_rs_bootstrap=true
+# vitam-mongo-fs-offer-02      mongo_cluster_name=offer-fs-1      mongo_shard_id=0
+# vitam-fs-offer               mongo_cluster_name=offer-fs-1      mongo_shard_id=0   mongo_arbiter=true
+# vitam-mongo-s3-offer-01      mongo_cluster_name=offer-s3-1      mongo_shard_id=0   mongo_rs_bootstrap=true
+# vitam-mongo-s3-offer-02      mongo_cluster_name=offer-s3-1      mongo_shard_id=0   is_small=true # PSsmin, this machine needs less hardware
+# vitam-s3-offer               mongo_cluster_name=offer-s3-1      mongo_shard_id=0   mongo_arbiter=true
+
+
+##### Zone data
+
+# Group definition ; DO NOT MODIFY
+[zone_data:children]
+hosts_elasticsearch_data
+hosts_mongodb_data
+
+[hosts_elasticsearch_data]
+# TODO: Put here servers where this service will be deployed : elasticsearch-data cluster
+# 2 params available for huge environments (parameter to be declared after each server) :
+#    is_data=true/false
+#    is_master=true/false
+#    for site/room balancing : is_balancing=<whatever> so replica can be applied on all sites/rooms ; default is vitam_site_name
+#    other options are not handled yet
+# defaults are set to true, if undefined. If defined, at least one server MUST be is_data=true
+# Examples :
+# server1 is_master=true is_data=false
+# server2 is_master=false is_data=true
+# More explanation here : https://www.elastic.co/guide/en/elasticsearch/reference/5.6/modules-node.html
+
+
+# Group definition ; DO NOT MODIFY
+[hosts_mongodb_data:children]
+hosts_mongos_data
+hosts_mongoc_data
+hosts_mongod_data
+
+[hosts_mongos_data]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongos_offer]
+# TODO: Put here servers where this service will be deployed : mongos_data cluster
+# Mandatory params
+#  - mongo_cluster_name=mongo-data ; "mongo-data" is mandatory
+# The recommended practice is to install the mongos instance on the same servers as the mongoc instances
+# Example :
+# vitam-mdbs-01   mongo_cluster_name=mongo-data
+# vitam-mdbs-02   mongo_cluster_name=mongo-data
+# vitam-mdbs-03   mongo_cluster_name=mongo-data
+
+
+[hosts_mongoc_data]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongoc_offer]
+# TODO: Put here servers where this service will be deployed : mongoc_data cluster
+# Mandatory params
+#  - mongo_cluster_name=mongo-data ; "mongo-data" is mandatory
+# Optional params
+#  - mongo_rs_bootstrap=true ; mandatory for 1 node, some init commands will be executed on it
+# The recommended practice is to install the mongoc instance on the same servers as the mongos instances
+# Recommended practice in production: use 3 instances
+# Example :
+# vitam-mdbs-01   mongo_cluster_name=mongo-data   mongo_rs_bootstrap=true
+# vitam-mdbs-02   mongo_cluster_name=mongo-data
+# vitam-mdbs-03   mongo_cluster_name=mongo-data
+
+
+[hosts_mongod_data]
+# WARNING : DO NOT COLLOCATE WITH [hosts_mongod_offer]
+# TODO: Put here servers where this service will be deployed : mongod_data cluster
+# Each replica_set should have an odd number of members (2n + 1)
+# Reminder: For Vitam, one mongodb shard is using one replica_set
+# Mandatory params
+#  - mongo_cluster_name=mongo-data ; "mongo-data" is mandatory
+#  - mongo_shard_id=x ; increment by 1 from 0 to n
+# Optional params
+#  - mongo_rs_bootstrap=true ; mandatory for 1 node of the shard, some init commands will be executed on it
+#  - mongo_arbiter=true ; the node will be only an arbiter, do not add this parameter on a mongo_rs_bootstrap node
+#  - mongod_memory=x ; this will force the wiredtiger cache size to x (unit is GB) ; can be usefull when colocalization with elasticsearch
+#  - is_small=true ; this will force the priority for this server to be lower when electing master ; hardware can be downgraded for this machine
+# Recommended practice in production: use 3 instances per shard
+# Example:
+# vitam-mdbd-01  mongo_cluster_name=mongo-data   mongo_shard_id=0   mongo_rs_bootstrap=true
+# vitam-mdbd-02  mongo_cluster_name=mongo-data   mongo_shard_id=0
+# vitam-mdbd-03  mongo_cluster_name=mongo-data   mongo_shard_id=0
+# vitam-mdbd-04  mongo_cluster_name=mongo-data   mongo_shard_id=1   mongo_rs_bootstrap=true
+# vitam-mdbd-05  mongo_cluster_name=mongo-data   mongo_shard_id=1
+# vitam-mdbd-06  mongo_cluster_name=mongo-data   mongo_shard_id=1
+
+
+###### Zone admin
+
+# Group definition ; DO NOT MODIFY
+[zone_admin:children]
+hosts_cerebro
+hosts_consul_server
+hosts_kibana_data
+log_servers
+hosts_elasticsearch_log
+prometheus
+hosts_grafana
+
+[hosts_cerebro]
+# TODO: Put here servers where this service will be deployed : vitam-elasticsearch-cerebro
+
+
+[hosts_consul_server]
+# TODO: Put here servers where this service will be deployed : consul
+
+
+[hosts_kibana_data]
+# TODO: Put here servers where this service will be deployed : kibana (for data cluster)
+
+
+[log_servers:children]
+hosts_kibana_log
+hosts_logstash
+
+[hosts_kibana_log]
+# TODO: Put here servers where this service will be deployed : kibana (for log cluster)
+
+
+[hosts_logstash]
+# TODO: Put here servers where this service will be deployed : logstash
+# IF you connect VITAM to external SIEM, DO NOT FILL THE SECTION
+
+
+[hosts_elasticsearch_log]
+# TODO: Put here servers where this service will be deployed : elasticsearch-log cluster
+# IF you connect VITAM to external SIEM, DO NOT FILL THE SECTION
+
+
+########### Extra VITAM applications ###########
+[prometheus:children]
+hosts_prometheus
+hosts_alertmanager
+
+[hosts_prometheus]
+# TODO: Put here server where this service will be deployed : prometheus server
+
+
+[hosts_alertmanager]
+# TODO: Put here servers where this service will be deployed : alertmanager
+
+
+[hosts_grafana]
+# TODO: Put here servers where this service will be deployed : grafana-server
+
+
+########### Global vars ###########
+
+[hosts:vars]
+
+# ===============================
+# VITAM
+# ===============================
+
+# Declare user for ansible on target machines
+ansible_ssh_user=
+# Can target user become as root ? ; true is required by VITAM (usage of a sudoer is mandatory)
+ansible_become=true
+# How can ansible switch to root ?
+# See https://docs.ansible.com/ansible/latest/user_guide/become.html
+
+# Related to Consul ; apply in a table your DNS server(s)
+# Example : dns_servers=["8.8.8.8","8.8.4.4"]
+# If no dns recursors are available, leave this value empty.
+dns_servers=
+
+# Define local Consul datacenter name
+# CAUTION !!! Only alphanumeric characters when using s3 as offer backend !!!
+vitam_site_name=prod-dc1
+
+# On offer, value is the prefix for all container's names. If upgrading from R8, you MUST UNCOMMENT this parameter AS IS !!!
+#vitam_prefix_offer=""
+
+# check whether on primary site (true) or secondary (false)
+primary_site=true
+
+# ===============================
+# EXTRA
+# ===============================
+
+### vitam-itest repository ###
+vitam_tests_branch=master
+vitam_tests_gitrepo_protocol=
+vitam_tests_gitrepo_baseurl=
+vitam_tests_gitrepo_url=
+
+# Used when VITAM is behind a reverse proxy (provides configuration for reverse proxy && displayed in header page)
+vitam_reverse_external_dns=
+# For reverse proxy use
+reverse_proxy_port=443
+vitam_reverse_external_protocol=https
+# http_proxy env var to use ; has to be declared even if empty
+http_proxy_environnement=
