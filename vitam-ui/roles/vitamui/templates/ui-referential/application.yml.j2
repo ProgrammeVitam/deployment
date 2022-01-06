@@ -33,6 +33,10 @@ server:
     key-store: {{ vitamui_folder_conf }}/keystore_{{ vitamui_struct.package_name }}.jks
     key-store-password: {{ password_keystore }}
     key-password: {{ password_keystore }}
+    enabled-protocols: {{ssl_setting.enabled_protocols}}
+    ciphers: {{ssl_setting.ciphers}}
+
+
 {% endif %}
   tomcat:
     connection-timeout: {{ vitamui_struct.server_connection_timeout }}
@@ -79,8 +83,8 @@ ui-referential:
   portal-logo: "{{ vitamui_platform_informations.theme.portal_logo }}"
   header-logo: "{{ vitamui_platform_informations.theme.header_logo }}"
   footer-logo: "{{ vitamui_platform_informations.theme.footer_logo }}"
-  portal-message: "{{ vitamui_platform_informations.theme.portal_message }}"
-  portal-title: "{{ vitamui_platform_informations.theme.portal_title }}"
+  portal-message: "{{ vitamui_platform_informations.portal_message }}"
+  portal-title: "{{ vitamui_platform_informations.portal_title }}"
   theme-colors:
     vitamui-primary: "{{ vitamui_platform_informations.theme.theme_colors.vitamui_primary }}"
     vitamui-secondary: "{{ vitamui_platform_informations.theme.theme_colors.vitamui_secondary }}"
@@ -162,3 +166,12 @@ list-enable-external-identifiers:
 {% endif %}
 {% endfor %}
 {% endif %}
+
+opentracing:
+  jaeger:
+    enabled: {{ opentracing.jaeger.enabled }}
+    logSpans: {{ opentracing.jaeger.log_spans }}
+    expandExceptionLogs: {{opentracing.jaeger.expand_exception_logs}}
+    udp-sender:
+      host: {{ opentracing.jaeger.udp_sender.host }}
+      port: {{ opentracing.jaeger.udp_sender.port }}

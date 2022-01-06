@@ -9,10 +9,6 @@ spring:
         tags: {{ consul_tags }}
         instanceId:  {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
 
-# should we fix some limit here ?
-spring.servlet.multipart.max-file-size: -1
-spring.servlet.multipart.max-request-size: -1
-
 server-identity:
   identityName: {{ vitamui_site_name }}
   identityRole: vitamui-{{ vitamui_struct.vitamui_component }}
@@ -28,6 +24,9 @@ server:
     trust-store: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
     trust-store-password: {{ password_truststore }}
     client-auth: need
+    enabled-protocols: {{ssl_setting.enabled_protocols}}
+    ciphers: {{ssl_setting.ciphers}}
+
 {% endif %}
   tomcat:
     accesslog:
@@ -86,6 +85,16 @@ ingest-external:
         key-password:  {{ password_truststore }}
       hostname-verification: false
 {% endif %}
+
+opentracing:
+  jaeger:
+    enabled: {{ opentracing.jaeger.enabled }}
+    logSpans: {{ opentracing.jaeger.log_spans }}
+    expandExceptionLogs: {{opentracing.jaeger.expand_exception_logs}}
+    udp-sender:
+      host: {{ opentracing.jaeger.udp_sender.host }}
+      port: {{ opentracing.jaeger.udp_sender.port }}
+
 
 logging:
   config: {{ vitamui_folder_conf }}/logback.xml

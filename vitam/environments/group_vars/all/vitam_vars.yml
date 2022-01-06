@@ -54,9 +54,6 @@ vitam_defaults:
     # consul_business_check: 10 # value in seconds
     # consul_admin_check: 10 # value in seconds
 
-    # metricslevel: DEBUG
-    # metricsinterval: 3
-    # metricsunit: MINUTES
 
     # access_retention_days: 30 # Number of days for file retention
     # access_total_size_cap: "10GB" # total acceptable size
@@ -148,7 +145,7 @@ vitam_timers:
         - name: vitam-metadata-computed-inherited-rules
           frequency: "*-*-* 02:30:00"
         - name: vitam-metadata-purge-dip
-          frequency: "*-*-* 02:20:00"
+          frequency: "*-*-* *:00:00"
         - name: vitam-metadata-purge-transfers-SIP
           frequency: "*-*-* 02:25:00"
         - name: vitam-metadata-audit-mongodb-es
@@ -280,7 +277,6 @@ vitam:
         static_content: "{{ vitam_defaults.folder.root_path }}/app/ihm-demo/v2"
         baseuri: "ihm-demo"
         https_enabled: true
-        # metrics_enabled: false # Set to false if ihm_demo component is outside the Vitam area (default: true)
         secret_platform: "false"
         # User session timeout in milliseconds (for shiro)
         session_timeout: 1800000
@@ -360,7 +356,9 @@ vitam:
         schemaValidatorCacheTimeoutInSeconds: 300
         # DIP cleanup delay (in minutes)
         dipTimeToLiveInMinutes: 10080 # 7 days
+        criticalDipTimeToLiveInMinutes: 1440 # 1 day
         transfersSIPTimeToLiveInMinutes: 10080 # 7 days
+        workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
         elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata/mapping" # Directory of elasticsearch metadata mapping
         #### Audit data consistency MongoDB-ES ####
         isDataConsistencyAuditRunnable: false
@@ -455,6 +453,9 @@ vitam:
         bulkAtomicUpdateThreadPoolSize: 8
         # Number of jobs that can be queued in memory before blocking for bulk atomic update
         bulkAtomicUpdateThreadPoolQueueSize: 16
+        # Dip/transfer threshold file size
+        binarySizePlatformThreshold: 1
+        binarySizePlatformThresholdSizeUnit: "GIGABYTE"
     workspace:
         vitam_component: workspace
         host: "workspace.service.{{ consul_domain }}"
@@ -465,6 +466,7 @@ vitam:
         secret_platform: "true"
 
 # for functional-administration, manage master/slave tenant configuration
+# http://www.programmevitam.fr/ressources/DocCourante/html/installation/installation/21-addons.html#passage-des-identifiants-des-referentiels-en-mode-esclave
 vitam_tenants_usage_external:
   - name: 0
     identifiers:
@@ -481,10 +483,11 @@ vitam_tenants_usage_external:
       - SECURITY_PROFILE
       - CONTEXT
 
+# http://www.programmevitam.fr/ressources/DocCourante/html/installation/installation/21-addons.html#durees-minimales-permettant-de-controler-les-valeurs-saisies
 vitam_tenant_rule_duration:
-  - name: 2 # applied tenant
-    rules:
-      - AppraisalRule : "1 year" # rule name : rule value
+  # - name: 2 # applied tenant
+  #   rules:
+  #     - AppraisalRule : "1 year" # rule name : rule value
 
 # If you want to deploy vitam in a single VM, add the vm name in this array
 single_vm_hostnames: ['localhost']
