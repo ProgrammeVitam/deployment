@@ -1,0 +1,153 @@
+---
+# Vitam platform secret key
+# Note: It has to be the same on all sites
+plateforme_secret: change_it_vitamsecret
+
+# The consul key must be 16-bytes, Base64 encoded: https://www.consul.io/docs/agent/encryption.html
+# You can generate it with the "consul keygen" command
+# Or you can use this script: deployment/pki/scripts/generate_consul_key.sh
+# Note: It has to be the same on all sites
+consul_encrypt: Biz14ohqN4HtvZmrXp3N4A==
+
+mongodb:
+  mongo-data:
+    passphrase: changeitkM4L6zBgK527tWBb
+    admin:
+      user: vitamdb-admin
+      password: change_it_1MpG22m2MywvKW5E
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_HycFEVD74g397iRe
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    metadata:
+      user: metadata
+      password: change_it_37b97KVaDV8YbCwt
+    logbook:
+      user: logbook
+      password: change_it_jVi6q8eX4H1Ce8UC
+    report:
+      user: report
+      password: change_it_jb7TASZbU6n85t8L
+    functionalAdmin:
+      user: functional-admin
+      password: change_it_9eA2zMCL6tm6KF1e
+    securityInternal:
+      user: security-internal
+      password: change_it_m39XvRQWixyDX566
+  offer-fs-1:
+    passphrase: changeitmB5rnk1M5TY61PqZ
+    admin:
+      user: vitamdb-admin
+      password: change_it_FLkM5emt63N73EcN
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_QeH8q4e16ah4QKXS
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_pQi1T1yT9LAF8au8
+  offer-fs-2:
+    passphrase: changeiteSY1By57qZr4MX2s
+    admin:
+      user: vitamdb-admin
+      password: change_it_84aTMFZ7h8e2NgMe
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_Am1B37tGY1w5VfvX
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_mLDYds957sNQ53mA
+  offer-tape-1:
+    passphrase: changeitmB5rnk1M5TY61PqZ
+    admin:
+      user: vitamdb-admin
+      password: change_it_FLkM5emt63N73EcN
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_QeH8q4e16ah4QKXS
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_pQi1T1yT9LAF8au8
+  offer-swift-1:
+    passphrase: changeitgYvt42M2pKL6Zx3T
+    admin:
+      user: vitamdb-admin
+      password: change_it_e21hLp51WNa4sJFS
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_QB8857SJrGrQh2yu
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_AWJg2Bp3s69P6nMe
+  offer-s3-1:
+    passphrase: changeituF1jVdR9NqdTG625
+    admin:
+      user: vitamdb-admin
+      password: change_it_5b7cSWcS5M1NF4kv
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_S9jE24rxHwUZP6y5
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_TuTB1i2k7iQW3zL2
+  offer-tape-1:
+    passphrase: changeituF1jghT9NqdTG625
+    admin:
+      user: vitamdb-admin
+      password: change_it_5b7cSWcab91NF4kv
+    localadmin:
+      user: vitamdb-localadmin
+      password: change_it_S9jE24rxHwUZP5a6
+    system:
+      user: vitamdb-system
+      password: change_it_HycFEVD74g397iRe
+    offer:
+      user: offer
+      password: change_it_TuTB1i2k7iQW3c2a
+
+vitam_users:
+  - vitam_aadmin:
+    login: aadmin
+    password: change_it_z5MP7GC4qnR8nL9t
+    role: admin
+  - vitam_uuser:
+    login: uuser
+    password: change_it_w94Q3jPAT2aJYm8b
+    role: user
+  - vitam_gguest:
+    login: gguest
+    password: change_it_E5v7Tr4h6tYaQG2W
+    role: guest
+  - techadmin:
+    login: techadmin
+    password: change_it_K29E1uHcPZ8zXji8
+    role: admin
+
+ldap_authentification:
+    ldap_pwd: "change_it_t69Rn5NdUv39EYkC"
+
+admin_basic_auth_password: change_it_5Yn74JgXwbQ9KdP8
+
+vitam_offers:
+    offer-swift-1:
+        swiftUser: swift_user
+        swiftPassword: password_change_m44j57aYeRPnPXQ2
+    offer-s3-1:
+        s3AccessKey: accessKey_change_grLS8372Uga5EJSx
+        s3SecretKey: secretKey_change_p97es2m2CHXPJA1m

@@ -1,0 +1,5 @@
+---
+
+- hosts: hosts_elasticsearch_log
+  roles:
+    - curator

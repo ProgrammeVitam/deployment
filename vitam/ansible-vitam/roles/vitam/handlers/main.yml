@@ -1,0 +1,12 @@
+---
+
+- name: "restart service"
+  include_tasks: tasks/restart_service.yml
+  listen: "restart service"
+  when: ( primary_site | lower == "true" ) or
+        ( vitam_struct.vitam_component in vitam_secondary_site_components )
+
+- name: reload consul
+  include_tasks: tasks/reload_consul.yml
+  listen: "reload consul configuration"
+  when: consul_disabled is not defined or consul_disabled |lower != "true"

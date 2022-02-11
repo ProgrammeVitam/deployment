@@ -1,0 +1,17 @@
+---
+# tasks file for rsyslog
+
+- name: ensure rsyslog package is installed
+  package:
+    name: rsyslog
+    state: latest
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+
+- name: ensure service is started on boot && restart service
+  service:
+    name: rsyslog
+    enabled: true
+    state: started
