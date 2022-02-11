@@ -6,7 +6,7 @@ spring:
       discovery:
         preferIpAddress: true
         tags: {{ consul_tags }}
-        instanceId:  {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
+        instanceId: {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
 
 server:
   host: {{ vitamui_struct.host }}
@@ -19,7 +19,7 @@ server:
   servlet.context-path: /
   servlet.session.cookie.path: /
 {% else %}
-  servlet.context-path: /identity
+  servlet.context-path: /identity-admin
   servlet.session.cookie.path: /identity-admin
 {% endif %}
   scheme: {% if vitamui_struct.secure|lower =='true' %}https{% else %}http{% endif %}
@@ -29,6 +29,9 @@ server:
     key-store: {{ vitamui_folder_conf }}/keystore_{{ vitamui_struct.package_name }}.jks
     key-store-password: {{ password_keystore }} # TODO OMA : revoir
     key-password: {{ password_keystore }}
+    enabled-protocols: {{ssl_setting.enabled_protocols}}
+    ciphers: {{ssl_setting.ciphers}}
+
 {% endif %}
   tomcat:
     accesslog:
@@ -75,8 +78,8 @@ ui-identity:
   portal-logo: "{{ vitamui_platform_informations.theme.portal_logo }}"
   header-logo: "{{ vitamui_platform_informations.theme.header_logo }}"
   footer-logo: "{{ vitamui_platform_informations.theme.footer_logo }}"
-  portal-message: "{{ vitamui_platform_informations.theme.portal_message }}"
-  portal-title: "{{ vitamui_platform_informations.theme.portal_title }}"
+  portal-message: "{{ vitamui_platform_informations.portal_message }}"
+  portal-title: "{{ vitamui_platform_informations.portal_title }}"
   theme-colors:
     vitamui-primary: "{{ vitamui_platform_informations.theme.theme_colors.vitamui_primary }}"
     vitamui-secondary: "{{ vitamui_platform_informations.theme.theme_colors.vitamui_secondary }}"
@@ -130,3 +133,12 @@ cas:
     trust-store-password: {{ password_truststore }}
     hostname-verification: {{ vitamui.cas_server.hostname_verification }}
 {% endif %}
+
+opentracing:
+  jaeger:
+    enabled: {{ opentracing.jaeger.enabled }}
+    logSpans: {{ opentracing.jaeger.log_spans }}
+    expandExceptionLogs: {{opentracing.jaeger.expand_exception_logs}}
+    udp-sender:
+      host: {{ opentracing.jaeger.udp_sender.host }}
+      port: {{ opentracing.jaeger.udp_sender.port }}
