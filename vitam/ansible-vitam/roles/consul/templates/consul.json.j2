@@ -38,13 +38,13 @@
   "data_dir": "{{ consul_folder_data }}",
   "log_level": "{{ consul.log_level | default('INFO') }}",
   "log_file": "{{ consul_folder_log }}/consul.log",
-  "enable_syslog": true,
+  "enable_syslog": {{ consul.enable_syslog | default('true') }},
 
   "checks" : [
     {
         "name": "Check Consul DNS resolution for node",
         "args": ["/usr/bin/getent", "ahostsv4", "{{ ansible_hostname }}.node.{{ consul_domain }}"],
-        "interval": "{{ consul.check_internal | default(10) }}s",
+        "interval": "{{ consul.check_interval | default(10) }}s",
         "timeout": "{{ consul.check_timeout | default(10) }}s"
       }
   ]

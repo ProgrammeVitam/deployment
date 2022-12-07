@@ -1,5 +1,6 @@
 workspaceUrl: {{vitam.workspace | client_url}}
 urlProcessing: {{vitam.processing | client_url}}
+contextPath: {{ vitam_struct.context_path }}
 
 # Archive Unit Profile cache settings (max entries in cache & retention timeout in seconds)
 archiveUnitProfileCacheMaxEntries: {{ vitam.metadata.archiveUnitProfileCacheMaxEntries }}
@@ -15,6 +16,10 @@ criticalDipTimeToLiveInMinutes: {{ vitam.metadata.criticalDipTimeToLiveInMinutes
 
 # TRANSFER purge service (in minutes)
 transfersSIPTimeToLiveInMinutes: {{ vitam.metadata.transfersSIPTimeToLiveInMinutes }}
+
+# Units Stream Threshold
+unitsStreamThreshold: {{ vitam.metadata.unitsStreamThreshold | default(1000000) }}
+streamExecutionLimit: {{ vitam.metadata.streamExecutionLimit | default(3) }}
 
 # Configuration MongoDB
 mongoDbNodes:

@@ -30,6 +30,7 @@ vitam_defaults:
         api_long_call_timeout: 300
         status_retries_number: 60
         status_retries_delay: 5
+        at_boot: false
 ### Trust X-SSL-CLIENT-CERT header for external api auth ? (true | false)
     vitam_ssl_user_header: true
 ### Force chunk mode : set true if chunk header should be checked
@@ -181,6 +182,7 @@ vitam:
 
 ### Example
   # component:
+  #    at_boot: false
   #    logback_rolling_policy: true
   ## Force the log level for this component. Available logback values are (TRACE, DEBUG, INFO, WARN, ERROR, OFF)
   ## If this var is not set, the default one will be used (vitam_defaults.services.log_level)
@@ -198,6 +200,7 @@ vitam:
         https_enabled: true
         # Use platform secret for this component ? : do not modify
         secret_platform: "false"
+        authorizeTrackTotalHits: false # if false, limit results to 10K. if true, authorize results overs 10K (can overload elasticsearch-data)
     accessinternal:
         vitam_component: access-internal
         host: "access-internal.service.{{ consul_domain }}"
@@ -358,11 +361,14 @@ vitam:
         dipTimeToLiveInMinutes: 10080 # 7 days
         criticalDipTimeToLiveInMinutes: 1440 # 1 day
         transfersSIPTimeToLiveInMinutes: 10080 # 7 days
+        unitsStreamThreshold: 1000000 # 1 million
+        streamExecutionLimit: 3 # 3 times
         workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
         elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata/mapping" # Directory of elasticsearch metadata mapping
         #### Audit data consistency MongoDB-ES ####
         isDataConsistencyAuditRunnable: false
         dataConsistencyAuditOplogMaxSize: 100
+        context_path: "/metadata"
     processing:
         vitam_component: processing
         host: "processing.service.{{ consul_domain }}"
@@ -397,11 +403,14 @@ vitam:
         storageLogTraceabilityThreadPoolSize: 16
         # Offer synchronization batch size & thread pool size
         offerSynchronizationBulkSize: 1000
-        # Retries attempts
+        offerSyncThreadPoolSize: 32
+        # Retries attempts on failures
         offerSyncNumberOfRetries: 3
+        # Retry wait delay on failures (in seconds)
         offerSyncFirstAttemptWaitingTime: 15
         offerSyncWaitingTime: 30
-        offerSyncThreadPoolSize: 32
+        # Offer synchronization wait delay  (in seconds) for async offers (synchronization from a tape-storage offer)
+        offerSyncAccessRequestCheckWaitingTime: 10
         logback_total_size_cap:
           offersync:
             history_days: 30
@@ -464,6 +473,49 @@ vitam:
         baseuri: "workspace"
         https_enabled: false
         secret_platform: "true"
+        context_path: "/workspace"
+    collect:
+        vitam_component: collect
+        host: "collect.service.{{ consul_domain }}"
+        port_service: 8030
+        port_admin: 28030
+        baseuri: "collect-external"
+        https_enabled: true
+        secret_platform: "false"
+    metadata_collect:
+        vitam_component: metadata-collect
+        host: "metadata-collect.service.{{ consul_domain }}"
+        port_service: 8290
+        port_admin: 28290
+        baseuri: "metadata-collect"
+        https_enabled: false
+        secret_platform: "true"
+        cluster_name: "{{ elasticsearch.data.cluster_name }}"
+        # Archive Unit Profile cache settings (max entries in cache & retention timeout in seconds)
+        archiveUnitProfileCacheMaxEntries: 100
+        archiveUnitProfileCacheTimeoutInSeconds: 300
+        # Schema validator cache settings (max entries in cache & retention timeout in seconds)
+        schemaValidatorCacheMaxEntries: 100
+        schemaValidatorCacheTimeoutInSeconds: 300
+        # DIP cleanup delay (in minutes)
+        dipTimeToLiveInMinutes: 10080 # 7 days
+        criticalDipTimeToLiveInMinutes: 1440 # 1 day
+        transfersSIPTimeToLiveInMinutes: 10080 # 7 days
+        workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
+        elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata-collect/mapping" # Directory of elasticsearch metadata mapping
+        #### Audit data consistency MongoDB-ES ####
+        isDataConsistencyAuditRunnable: false
+        dataConsistencyAuditOplogMaxSize: 100
+        context_path: "/metadata-collect"
+    workspace_collect:
+        vitam_component: workspace-collect
+        host: "workspace-collect.service.{{ consul_domain }}"
+        port_service: 8291
+        port_admin: 28291
+        baseuri: "workspace-collect"
+        https_enabled: false
+        secret_platform: "true"
+        context_path: "/workspace-collect"
 
 # for functional-administration, manage master/slave tenant configuration
 # http://www.programmevitam.fr/ressources/DocCourante/html/installation/installation/21-addons.html#passage-des-identifiants-des-referentiels-en-mode-esclave
