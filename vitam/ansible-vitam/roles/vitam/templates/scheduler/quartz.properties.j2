@@ -1,0 +1,17 @@
+org.quartz.scheduler.instanceName=VitamScheduler
+
+org.quartz.scheduler.instanceId=AUTO
+org.quartz.scheduler.instanceIdGenerator.class=org.quartz.simpl.HostnameInstanceIdGenerator
+org.quartz.scheduler.interruptJobsOnShutdown=true
+
+org.quartz.threadPool.class=fr.gouv.vitam.scheduler.server.util.VitamQuartzExecutorThreadPool
+org.quartz.threadPool.threadCount={{ vitam_scheduler_thread_count }}
+
+org.quartz.jobStore.class=com.novemberain.quartz.mongodb.MongoDBJobStore
+org.quartz.jobStore.mongoUri=mongodb://{{ mongodb['mongo-data'].scheduler.user }}:{{ mongodb['mongo-data'].scheduler.password }}@{% for server in groups['hosts_mongos_data'] %}{{ hostvars[server]['ip_service'] }}:{{ mongodb.mongos_port }}{% if not loop.last %},{% endif %}{% endfor %}/scheduler
+
+org.quartz.jobStore.isClustered=true
+org.quartz.jobStore.dbName=scheduler
+org.quartz.jobStore.collectionPrefix=vitam
+
+org.quartz.jobStore.checkInErrorHandler=com.novemberain.quartz.mongodb.cluster.NoOpErrorHandler

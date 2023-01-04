@@ -201,6 +201,11 @@
                 {% if prometheus.consul_exporter.enabled | default(false) | bool == true %}
                   <a href="/nodes/{{ item }}/consul-exporter" class="btn btn-primary btn-xs" target="_blank">Consul Exporter</a>
                 {% endif %}
+                {% if prometheus.elasticsearch_exporter.enabled | default(false) | bool == true %}
+                {% if item in groups['elasticsearch'] %}
+                  <a href="/nodes/{{ item }}/elasticsearch-exporter" class="btn btn-primary btn-xs" target="_blank">Elasticsearch Exporter</a>
+                {% endif %}
+                {% endif %}
                 </div>
               </div>
               {% endfor %}

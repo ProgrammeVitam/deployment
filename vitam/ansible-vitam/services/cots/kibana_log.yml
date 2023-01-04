@@ -1,0 +1,12 @@
+---
+
+- hosts: hosts_kibana_log
+  any_errors_fatal: true
+  roles:
+    - kibana
+    - kibana_dashboards
+  vars:
+    composant: "{{ kibana.log }}"
+    elasticsearch_host: "{{ elasticsearch.log.host }}"
+    elasticsearch_port: "{{ elasticsearch.log.port_http }}"
+  tags: kibana_log

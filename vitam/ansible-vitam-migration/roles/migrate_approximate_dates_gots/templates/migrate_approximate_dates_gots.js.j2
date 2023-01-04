@@ -1,0 +1,61 @@
+function bulkWriteObjectGroup(idsGot) {
+    var bulkUpdateOps = [];
+    var lifeCycles = db.getSiblingDB('logbook').LogbookLifeCycleObjectGroup.find({
+            _id: {
+                $in: idsGot
+            }
+        },
+        {
+            _id: true,
+            evDateTime: true,
+            "events": {
+                $slice: -1
+            }
+        }
+    ).forEach(function(lfc) {
+        bulkUpdateOps.push({
+            "updateOne": {
+                "filter": {
+                    "_id": lfc._id
+                },
+                "update": {
+                    $set: {
+                        _acd: lfc.evDateTime,
+                        _aud: lfc.events[0].evDateTime
+                    }
+                }
+            }
+
+        });
+    });
+    db.getSiblingDB('metadata').ObjectGroup.bulkWrite(bulkUpdateOps,{ordered : false});
+    print("number of items processed: "+counter);
+}
+
+
+
+var counter = 0, chunk = 10000, idsGot = [];
+
+
+var gots=db.getSiblingDB('metadata').ObjectGroup.find(
+    {
+        "_acd": {
+                    $exists: false
+        }
+    }, {
+        _id: true
+    }
+);
+
+gots.forEach(function(got) {
+    counter++;
+    idsGot.push(got._id);
+    if (counter % chunk == 0) {
+        bulkWriteObjectGroup(idsGot);
+        idsGot = [];
+    }
+})
+
+if (idsGot.length > 0) {
+    bulkWriteObjectGroup(idsGot);
+}

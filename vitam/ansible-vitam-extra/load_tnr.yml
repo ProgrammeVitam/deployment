@@ -1,7 +1,7 @@
 ---
 - hosts: hosts_ihm_recette
+  run_once: true
   roles:
     - loadTNR
   vars:
     vitam_struct: "{{ vitam.ihm_recette }}"
-    # KWA TODO: ensure that the role is run only once

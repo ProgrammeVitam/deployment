@@ -1,7 +1,6 @@
 ---
 
 - hosts: library
-  any_errors_fatal: true
   roles:
     - vitam
   vars:

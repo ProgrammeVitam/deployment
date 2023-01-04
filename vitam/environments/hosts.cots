@@ -64,6 +64,7 @@ hosts_worker
 hosts_access_internal
 hosts_metadata
 hosts_functional_administration
+hosts_scheduler
 hosts_logbook
 hosts_workspace
 hosts_storage_engine
@@ -82,6 +83,8 @@ hosts_security_internal
 [hosts_metadata]
 
 [hosts_functional_administration]
+
+[hosts_scheduler]
 
 [hosts_processing]
 
@@ -199,7 +202,6 @@ dns_servers=["10.100.211.222", "8.8.8.8"]
 
 ### memory settings ###
 memory_opts="-Xms32m -Xmx256m"
-timer_memory_opts="-Xms32m -Xmx128m"
 
 vitam_site_name=cots
 primary_site=true

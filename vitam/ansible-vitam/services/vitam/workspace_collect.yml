@@ -1,0 +1,9 @@
+---
+
+- hosts: hosts_workspace_collect
+  any_errors_fatal: true
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.workspace_collect }}"
+  tags: workspace_collect

@@ -1,0 +1,14 @@
+---
+
+- hosts: hosts_kibana_data
+  any_errors_fatal: true
+  roles:
+    - vitam
+    - kibana
+    - kibana_dashboards
+  vars:
+    composant: "{{ kibana.data }}"
+    elasticsearch_host: "{{ vitam.elastickibanainterceptor.host }}"
+    elasticsearch_port: "{{ vitam.elastickibanainterceptor.port_service }}"
+    vitam_struct: "{{ vitam.elastickibanainterceptor }}"
+  tags: kibana_data

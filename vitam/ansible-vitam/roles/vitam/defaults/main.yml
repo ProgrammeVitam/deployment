@@ -1,7 +1,6 @@
 ---
 # defaults file for common
 memory_opts: -Xms512m -Xmx512m
-timer_memory_opts: -Xms32m -Xmx128m
 gc_opts: "-Xlog:gc*,gc+age=trace,safepoint:file={{ vitam_folder_log }}/gc.log:utctime,pid,tags:filecount=32,filesize=64m"
 jmx_exporter_opts: ""
 java_opts: ""
@@ -14,6 +13,8 @@ performance_logger: "{{ vitam_struct.performance_logger | default(default_perfor
 package_name: "vitam-{{ vitam_struct.vitam_component }}"
 
 vitam_worker_capacity: "{{ ansible_processor_vcpus }}"
+
+vitam_scheduler_thread_count: "{{ vitam.scheduler.schedulerThreadSize | default(3) }}"
 
 vitam_site_id: 1
 

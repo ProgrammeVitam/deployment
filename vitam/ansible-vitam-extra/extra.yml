@@ -27,10 +27,6 @@
 
 - import_playbook: library.yml
 
-- hosts: ldap
-  gather_facts: no
-  any_errors_fatal: true
-  roles:
-    - openldap_server
+- import_playbook: ldap.yml
 
 - import_playbook: ihm-recette.yml

@@ -1,0 +1,9 @@
+---
+
+- name: initiate scheduler jobs
+  uri:
+    url: "http://{{ hostvars[groups['hosts_scheduler'][0]]['ip_admin'] }}:{{ vitam.scheduler.port_admin }}/scheduler/v1/jobs"
+    method: POST
+    status_code: 202
+  run_once: true
+  tags: update_vitam_configuration

@@ -53,7 +53,7 @@ Tips: pour tous les cas d'appel de ansible-playbook, il est possible de remplace
 
 4.  Générer les keystores
     a.  Configurer le vault référençant les mots de passe des keystores
-        ``ansible-vault edit environments/group_vars/all/vault-keystores.yml --vault-password-file vault_pass.txt``
+        ``ansible-vault edit environments/group_vars/all/main/vault-keystores.yml --vault-password-file vault_pass.txt``
     a.  Générer les keystores
         ``./generate_stores.sh``
 
@@ -65,7 +65,7 @@ Tips: pour tous les cas d'appel de ansible-playbook, il est possible de remplace
 
 
 6. Générer les host_vars "réseau"
-    ``ansible-playbook ansible-vitam/generate_hostvars_for_1_network_interface.yml -i environments/<fichier d'inventaire> --vault-password-file vault_pass.txt``
+    ``ansible-playbook ansible-vitam-exploitation/generate_hostvars_for_1_network_interface.yml -i environments/<fichier d'inventaire> --vault-password-file vault_pass.txt``
    A l'issue, vérifier les fichiers sous ``environments/host_vars`` et les adapter au besoin.
 
 

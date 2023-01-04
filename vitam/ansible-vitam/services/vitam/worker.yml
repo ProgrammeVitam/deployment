@@ -1,0 +1,12 @@
+---
+
+- hosts: hosts_worker
+  any_errors_fatal: true
+  roles:
+    - siegfried
+    - vitam
+    - griffins
+  vars:
+    vitam_struct: "{{ vitam.worker }}"
+    vitam_timestamp_usage: secure-logbook
+  tags: worker

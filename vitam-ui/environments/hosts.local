@@ -1,4 +1,5 @@
 [hosts]
+localhost ip_service=172.17.0.2 ip_admin=172.17.0.2
 
 [hosts:children]
 vitam
@@ -34,7 +35,9 @@ hosts_ui_portal
 hosts_ui_search
 hosts_ui_ingest
 hosts_ui_archive_search
+hosts_ui_collect
 hosts_ui_referential
+hosts_ui_pastis
 
 [hosts_ui_identity]
 # EDIT: Mandatory
@@ -48,6 +51,10 @@ localhost
 # EDIT: Mandatory
 localhost
 
+[hosts_ui_collect]
+# EDIT: Mandatory
+localhost
+
 [hosts_ui_referential]
 # EDIT: Mandatory
 localhost
@@ -57,6 +64,10 @@ localhost
 localhost
 
 [hosts_ui_search]
+# EDIT: Mandatory
+localhost
+
+[hosts_ui_pastis]
 # EDIT: Mandatory
 localhost
 
@@ -91,9 +102,12 @@ hosts_vitamui_ingest_external
 hosts_vitamui_ingest_internal
 hosts_vitamui_archive_search_external
 hosts_vitamui_archive_search_internal
+hosts_vitamui_collect_external
+hosts_vitamui_collect_internal
 hosts_vitamui_referential_external
 hosts_vitamui_referential_internal
 hosts_vitamui_security_internal
+hosts_vitamui_pastis_external
 
 [hosts_vitamui_iam_external]
 # EDIT: Mandatory
@@ -119,6 +133,14 @@ localhost
 # EDIT: Mandatory
 localhost
 
+[hosts_vitamui_collect_external]
+# EDIT: Mandatory
+localhost
+
+[hosts_vitamui_collect_internal]
+# EDIT: Mandatory
+localhost
+
 [hosts_vitamui_referential_external]
 # EDIT: Mandatory
 localhost
@@ -128,6 +150,10 @@ localhost
 localhost
 
 [hosts_vitamui_security_internal]
+# EDIT: Mandatory
+localhost
+
+[hosts_vitamui_pastis_external]
 # EDIT: Mandatory
 localhost
 

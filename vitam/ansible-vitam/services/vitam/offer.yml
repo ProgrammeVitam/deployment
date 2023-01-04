@@ -1,0 +1,14 @@
+---
+
+- hosts: hosts_storage_offer_default
+  any_errors_fatal: true
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.storageofferdefault }}"
+    password_keystore: "{{ keystores.server.offer }}"
+    password_manager_keystore: "{{ keystores.server.offer }}"
+    password_truststore: "{{ truststores.client_storage }}"
+    password_grantedstore: "{{ grantedstores.client_storage }}"
+    vitam_certificate_client_type: "storage"
+  tags: offer

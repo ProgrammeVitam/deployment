@@ -1,0 +1,11 @@
+---
+
+- hosts: hosts_security_internal
+  any_errors_fatal: true
+  roles:
+    - vitam
+    - { role: init_contexts_and_security_profiles, tags: update_vitam_certificates, when: primary_site | lower == "true" }
+    - { role: init_ontology, when: primary_site | lower == "true" }
+  vars:
+    vitam_struct: "{{ vitam.security_internal }}"
+  tags: security_internal
