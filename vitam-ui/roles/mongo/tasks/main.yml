@@ -1,22 +1,50 @@
 ---
 
-- name: "Install {{ mongodb.package_name }} package"
+- name: "Install {{ package_name }} package"
   package:
-    name: "{{ mongodb.package_name }}"
+    name: "{{ package_name }}"
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
-  notify:
-    - restart mongod
+  notify: restart mongod
+  when: force_vitamui_version is not defined
 
-- name: "enable {{ service_name }} service at boot"
+# Force a specific version to install (even downgrade)
+- block:
+
+  - name: "Install {{ package_name }} package"
+    apt:
+      name: "{{ package_name }}={{ force_vitamui_version }}"
+      force: yes
+      state: present
+    register: result
+    retries: "{{ packages_install_retries_number | default(2) }}"
+    until: result is succeeded
+    delay: "{{ packages_install_retries_delay | default(10) }}"
+    notify: restart mongod
+    when: ansible_os_family == "Debian"
+
+  - name: "Install {{ package_name }} package"
+    yum:
+      name: "{{ package_name }}-{{ force_vitamui_version }}"
+      allow_downgrade : yes
+      state: present
+    register: result
+    retries: "{{ packages_install_retries_number | default(2) }}"
+    until: result is succeeded
+    delay: "{{ packages_install_retries_delay | default(10) }}"
+    notify: restart mongod
+    when: ansible_os_family == "RedHat"
+
+  when: force_vitamui_version is defined
+
+- name: Disable mongod default service
   service:
-    name: "{{ service_name }}"
-    enabled: "{{ mongodb.at_boot | default(service_at_boot) }}"
-  notify:
-    - restart mongod
+    name: mongod
+    state: stopped
+    enabled: no
 
 #### Configuration ####
 
@@ -36,10 +64,8 @@
     - log
     - script
     - tmp
-  notify:
-    - restart mongod
-  tags:
-    - update_mongodb_configuration
+  notify: restart mongod
+  tags: update_mongodb_configuration
 
 - name: Create db directory
   file:
@@ -48,28 +74,24 @@
     owner: "{{ vitamui_defaults.users.vitamuidb | default('vitamuidb') }}"
     group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: "{{ vitamui_defaults.folder.folder_permission | default('0750') }}"
-  notify:
-    - restart mongod
-  tags:
-    - update_mongodb_configuration
+  notify: restart mongod
+  tags: update_mongodb_configuration
 
 - name: Create the mongod configuration server file
   template:
-    src: "mongod.conf.j2"
+    src: mongod.conf.j2
     dest: "{{ mongo_config_path }}/mongod.conf"
     owner: "{{ vitamui_defaults.users.vitamuidb | default('vitamuidb') }}"
     group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: "{{ vitamui_defaults.folder.conf_permission | default('0440') }}"
-  notify:
-    - restart mongod
-  tags:
-    - update_mongodb_configuration
+  notify: restart mongod
+  tags: update_mongodb_configuration
 
 #### Consul configuration ####
 
 - name: Ensure consul config dir is OK
   file:
-    path: "{{ consul.conf_folder }}"
+    path: "{{ consul.conf_folder | default('/vitam/conf/consul') }}"
     owner: "{{ vitamui_defaults.users.vitamui | default('vitamui') }}"
     group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: "{{ vitamui_defaults.folder.folder_permission | default('0750') }}"
@@ -81,15 +103,14 @@
 - name: Deploy consul agent service declaration
   template:
     src: "service-componentid.json.j2"
-    dest: "{{ consul.conf_folder }}/service-mongod.json"
-    owner: "{{ vitam_defaults.users.vitam }}"
+    dest: "{{ consul.conf_folder | default('/vitam/conf/consul') }}/service-mongod.json"
+    owner: "{{ vitamui_defaults.users.vitamui | default('vitamui') }}"
     group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: "{{ vitamui_defaults.folder.conf_permission | default('0440') }}"
   tags:
     - consul_conf
     - update_mongodb_configuration
-  notify:
-    - reload consul configuration for mongo
+  notify: reload consul configuration for mongo
 
 # Ensure that the installation is complete and consul up before contnuing...
 - meta: flush_handlers
@@ -97,12 +118,12 @@
     - consul_conf
     - update_mongodb_configuration
 
-- name: Ensure service is started
+- name: "Ensure {{ mongodb.service_name | default('vitamui-mongod') }} is started"
   service:
-    name: vitamui-mongod
+    name: "{{ mongodb.service_name | default('vitamui-mongod') }}"
     state: started
-  tags:
-    - update_mongodb_configuration
+    enabled: "{{ mongodb.at_boot | default(service_at_boot) }}"
+  tags: update_mongodb_configuration
 
 #### Mongo online configuration ####
 # Note : mongodb needs to be started for these elements to succeed
@@ -111,13 +132,12 @@
 
 - name: Copy the passphrase
   template:
-    src: "keyfile.j2"
+    src: keyfile.j2
     dest: "{{ mongo_config_path }}/keyfile"
     owner: "{{ vitamui_defaults.users.vitamuidb | default('vitamuidb') }}"
     group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: 0600
-  tags:
-    - update_mongodb_configuration
+  tags: update_mongodb_configuration
 
 # # Now let's initiate the replica set
 # # Do this only on the first node of the current shard
@@ -137,7 +157,7 @@
 
     - name: Copy the script which initiate the replica set
       template:
-        src: "init-replica.js.j2"
+        src: init-replica.js.j2
         dest: "{{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/init-replica.js"
         owner: "{{ vitamui_defaults.users.vitamuidb | default('vitamuidb') }}"
         group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
@@ -156,17 +176,16 @@
     #     - update_mongodb_configuration
 
     - name: Initiate the replica set
-      command: mongo --host {{ ip_service }} --port {{ mongodb.mongod_port }} {{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/init-replica.js
+      command: "mongo --host {{ ip_service }} --port {{ mongodb.mongod_port }} {{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/init-replica.js"
       tags:
         - update_mongodb_configuration
-
 
     - import_tasks: check_auth.yml
 
     # Create the local shard admin user
     - name: Copy the script which create the local users
       template:
-        src: "local-user.js.j2"
+        src: local-user.js.j2
         dest: "{{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/local-user.js"
         owner: "{{ vitamui_defaults.users.vitamuidb | default('vitamuidb') }}"
         group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
@@ -175,7 +194,7 @@
         - update_mongodb_configuration
 
     - name: Create the local shard user
-      command: "mongo --host {{ ip_service}}:{{ mongodb.mongod_port }} {{ mongo_credentials }} {{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/local-user.js"
+      command: "mongo --host {{ ip_service }}:{{ mongodb.mongod_port }} {{ mongo_credentials }} {{ vitamui_defaults.folder.root_path | default('/vitamui') }}/app/mongod/local-user.js"
       tags:
         - update_mongodb_configuration
 

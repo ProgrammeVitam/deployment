@@ -53,6 +53,16 @@ customer-init:
         - ROLE_GET_MANAGEMENT_CONTRACTS
         - ROLE_GET_ARCHIVE_PROFILES
 
+    - name: Profil consultation des contrats d'entrée
+      description: Profil pour la consultation des contrats d'entrée dans Vitam sans mises à jour des contrats
+      app-name: INGEST_APP
+      level:
+      roles:
+        - ROLE_GET_INGEST_CONTRACTS
+        - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_MANAGEMENT_CONTRACTS
+        - ROLE_GET_ARCHIVE_PROFILES
+
     - name:  Profil gestion des services agents
       description: Profil de gestion du référentiel des services agent avec possibilité de mise à jour
       app-name: AGENCIES_APP
@@ -266,6 +276,17 @@ customer-init:
         - ROLE_UPDATE_TRANSACTIONS
         - ROLE_DELETE_TRANSACTIONS
         - ROLE_UPDATE_UNITS_METADATA
+
+    - name: Profil pour les contrats de gestion
+      description: Contrats de gestion
+      app-name: MANAGEMENT_CONTRACT_APP
+      level:
+      roles:
+        - ROLE_GET_MANAGEMENT_CONTRACT
+        - ROLE_CREATE_MANAGEMENT_CONTRACT
+        - ROLE_UPDATE_MANAGEMENT_CONTRACT
+        - ROLE_DELETE_MANAGEMENT_CONTRACT
+
 
   # Other Default profiles for admin group
   admin-profiles:

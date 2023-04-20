@@ -1,5 +1,4 @@
 ---
 
 mongod_memory: ""
-service_name: "{{ mongodb.service_name | default('vitamui-mongod') }}"
-consul_service: "{{ consul.service_name | default('vitam-consul') }}"
+service_at_boot: "{{ vitamui_defaults.services.at_boot | default(false) }}"

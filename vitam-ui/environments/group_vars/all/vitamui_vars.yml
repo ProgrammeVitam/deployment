@@ -1,5 +1,5 @@
 ---
-single_vm_hostnames: ["localhost"]
+single_vm_hostnames: [ "localhost" ]
 
 pki_dir: "{{ inventory_dir }}/certs"
 
@@ -15,7 +15,7 @@ vitamui_defaults:
     vitamuidb: "vitamuidb"
     group: "vitamui"
   services:
-### The following values can be overwritten for each components in vitamui: parameters.
+    ### The following values can be overwritten for each components in vitamui: parameters.
     start_timeout: 300
     at_boot: false
     secure: true
@@ -89,7 +89,7 @@ vitamui:
     port_admin: 7003
 
   referential_external:
-    host: "referential-external.service.{{ consul_domain }}"
+    host: "vitamui-referential-external.service.{{ consul_domain }}"
     vitamui_component: "referential-external"
     vitamui_component_type: "external"
     port_service: 8105
@@ -100,7 +100,7 @@ vitamui:
     write_timeout: 30
 
   referential_internal:
-    host: "referential-internal.service.{{ consul_domain }}"
+    host: "vitamui-referential-internal.service.{{ consul_domain }}"
     vitamui_component: "referential-internal"
     vitamui_component_type: "internal"
     port_service: 8205
@@ -114,7 +114,7 @@ vitamui:
       - "{{ vitamui_defaults.folder.root_path | default('/vitamui') }}/conf/assets"
 
   iam_external:
-    host: "iam-external.service.{{ consul_domain }}"
+    host: "vitamui-iam-external.service.{{ consul_domain }}"
     vitamui_component: "iam-external"
     vitamui_component_type: "external"
     port_service: 8101
@@ -124,7 +124,7 @@ vitamui:
     write_timeout: 30
 
   iam_internal:
-    host: "iam-internal.service.{{ consul_domain }}"
+    host: "vitamui-iam-internal.service.{{ consul_domain }}"
     vitamui_component: "iam-internal"
     vitamui_component_type: "internal"
     port_service: 8201
@@ -192,14 +192,14 @@ vitamui:
     port_admin: 7009
 
   archive_search_external:
-    host: "archive-search-external.service.{{ consul_domain }}"
+    host: "vitamui-archive-search-external.service.{{ consul_domain }}"
     vitamui_component: "archive-search-external"
     vitamui_component_type: "external"
     port_service: 8109
     port_admin: 7109
 
   archive_search_internal:
-    host: "archive-search-internal.service.{{ consul_domain }}"
+    host: "vitamui-archive-search-internal.service.{{ consul_domain }}"
     vitamui_component: "archive-search-internal"
     vitamui_component_type: "internal"
     port_service: 8209
@@ -213,7 +213,7 @@ vitamui:
     port_admin: 7010
 
   collect_external:
-    host: "collect-external.service.{{ consul_domain }}"
+    host: "vitamui-collect-external.service.{{ consul_domain }}"
     vitamui_component: "collect-external"
     vitamui_component_type: "external"
     port_service: 8110
@@ -223,7 +223,7 @@ vitamui:
     write_timeout: 240000
 
   collect_internal:
-    host: "collect-internal.service.{{ consul_domain }}"
+    host: "vitamui-collect-internal.service.{{ consul_domain }}"
     vitamui_component: "collect-internal"
     vitamui_component_type: "internal"
     port_service: 8210
@@ -233,45 +233,19 @@ vitamui:
     write_timeout: 240000
 
   pastis_external:
-    host: "pastis-external.service.{{ consul_domain }}"
+    host: "vitamui-pastis-external.service.{{ consul_domain }}"
     vitamui_component: "pastis-external"
     vitamui_component_type: "external"
-    package_name: "vitamui-pastis-external"
-    service_name: "vitamui-pastis-external"
-    store_name: "pastis-external"
     port_service: 8015
     port_admin: 7115
-    secure: true
     server_connection_timeout: 60000
-    jvm_log: false
-    logging_level: "INFO"
-    log:
-      logback_max_file_size: "10MB"
-      logback_max_history: 30
-      logback_total_size_cap: "5GB"
-      root_log_level: "ERROR"
-      vitamui_level: "DEBUG"
 
   pastis:
     host: "pastis.service.{{ consul_domain }}"
     vitamui_component: "ui-pastis"
     vitamui_component_type: "ui"
-    package_name: "vitamui-ui-pastis"
-    service_name: "vitamui-ui-pastis"
-    store_name: "ui-pastis"
     port_service: 9015
     port_admin: 7015
-    server_connection_timeout: 60000
-    secure: true
-    jvm_log: false
-    logging_level: "INFO"
-    log:
-      logback_max_file_size: "10MB"
-      logback_max_history: 30
-      logback_total_size_cap: "5GB"
-      root_log_level: "ERROR"
-      vitamui_level: "DEBUG"
-
 
 ################################################################################
 
@@ -293,8 +267,8 @@ vitamui_platform_informations:
   proof_tenant: 1
   cas_tenant: -1
   first_customer_tenant: 9
-  portal_message: "Profitez d'un portail unique pour rechercher dans les archives de vos coffres, pour déposer des éléments en toutes sécurité et pour imprimer des etiquettes en quelques clics."
-  portal_title: "Portail des applications de l'archivage"
+  portal_message: "Pour gérer vos archives, profitez d'un portail d'applications proposé par le Programme Vitam et ses contributeurs."
+  portal_title: "Portail des applications Vitam"
   theme:
     portal_logo: logo_PORTAL.png
     header_logo: logo_HEADER.png
