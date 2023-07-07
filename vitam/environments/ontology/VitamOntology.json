@@ -880,6 +880,72 @@
     ]
   },
   {
+    "Identifier": "LinkingAgentIdentifierType",
+    "SedaField": "LinkingAgentIdentifierType",
+    "Description": "Mapping : unit-es-mapping.json. LinkingAgentIdentifierType ",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "LinkingAgentIdentifierType",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "LinkingAgentIdentifierValue",
+    "SedaField": "LinkingAgentIdentifierValue",
+    "Description": "Mapping : unit-es-mapping.json. LinkingAgentIdentifierValue",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "LinkingAgentIdentifierValue",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "LinkingAgentRole",
+    "SedaField": "LinkingAgentRole",
+    "Description": "Mapping : unit-es-mapping.json. LinkingAgentRole",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "LinkingAgentRole",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "OriginatingSystemIdReplyTo",
+    "SedaField": "OriginatingSystemIdReplyTo",
+    "Description": "Mapping : unit-es-mapping.json. OriginatingSystemIdReplyTo",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "OriginatingSystemIdReplyTo",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "DateLitteral",
+    "SedaField": "DateLitteral",
+    "Description": "Mapping : unit-es-mapping.json. DateLitteral",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "DateLitteral",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "DataObjectProfile",
+    "SedaField": "DataObjectProfile",
+    "Description": "Mapping : og-es-mapping.json",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "DataObjectProfile",
+    "Collections": [
+      "ObjectGroup"
+    ]
+  },
+  {
     "Identifier": "TransactedDate",
     "SedaField": "TransactedDate",
     "Description": "Mapping : unit-es-mapping.json",
@@ -1713,6 +1779,28 @@
     ]
   },
   {
+    "Identifier": "_aud",
+    "ApiField": "#approximate_update_date",
+    "Description": "Approximative updated date, Mapping : unit-es-mapping.json",
+    "Type": "DATE",
+    "Origin": "INTERNAL",
+    "ShortName": "_aud",
+    "Collections": [
+      "Unit", "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "_acd",
+    "ApiField": "#approximate_creation_date",
+    "Description": "Approximative created date, Mapping : unit-es-mapping.json",
+    "Type": "DATE",
+    "Origin": "INTERNAL",
+    "ShortName": "_acd",
+    "Collections": [
+      "Unit", "ObjectGroup"
+    ]
+  },
+  {
     "Identifier": "Name",
     "ApiField": "Name",
     "Description": "Mapping : accesscontract-es-mapping.json",
@@ -2140,12 +2228,24 @@
   {
     "Identifier": "Comment",
     "SedaField": "Comment",
-    "Description": "Mapping : format-es-mapping.json",
+    "Description": "Mapping : format-es-mapping.json / accessionregisterdetail-es-mapping.json",
     "Type": "TEXT",
     "Origin": "INTERNAL",
     "ShortName": "Commentaire",
     "Collections": [
-      "FileFormat"
+      "FileFormat",
+      "AccessionRegisterDetail"
+    ]
+  },
+  {
+    "Identifier": "obIdIn",
+    "SedaField": "MessageIdentifier",
+    "Description": "Mapping : accessionregisterdetail-es-mapping.json",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "Object identifier income",
+    "Collections": [
+      "AccessionRegisterDetail"
     ]
   },
   {
@@ -3119,6 +3219,26 @@
     "Type": "BOOLEAN",
     "Origin": "INTERNAL",
     "ShortName": "validComputedInheritedRules",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "InheritanceOrigin",
+    "Description": "Origine de définition des règles de gestion",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "InheritanceOrigin",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "InheritedRuleIds",
+    "Description": "Identifiant des règles héritées applicables",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "InheritedRuleIds",
     "Collections": [
       "Unit"
     ]

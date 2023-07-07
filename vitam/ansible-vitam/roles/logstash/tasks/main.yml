@@ -5,7 +5,6 @@
   fail: msg="Too much replica defined for logstash index in elasticsearch-log"
   when: groups['hosts_elasticsearch_log']|length <= kibana.log.metrics.replica and groups['hosts_elasticsearch_log']|length>1
 
-
 - name: Install java (prerequisite for other components) when RedHat
   yum:
     name: "{{ java_prerequisites.redhat }}"
@@ -50,14 +49,7 @@
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
   notify:
-    - restart logstash
-
-- name: Enable logstash
-  service:
-    name: logstash
-    enabled: yes
-  notify:
-    - restart logstash
+    - "logstash - restart service"
 
 ## Logstash configuration
 
@@ -75,9 +67,9 @@
     - lib
     - tmp
   notify:
-    - restart logstash
+    - "logstash - restart service"
 
-- name: ensure json conf extra  directory exists
+- name: ensure json conf extra directory exists
   file:
     path: "{{ logstash_confextra_dir }}"
     owner: "{{ logstash.user }}"
@@ -85,7 +77,7 @@
     state: directory
     mode: "{{ vitam_defaults.folder.folder_permission }}"
   notify:
-    - restart logstash
+    - "logstash - restart service"
 
 - name: apply configuration files
   template:
@@ -99,7 +91,7 @@
     - "startup.options"
     - "logstash.yml"
   notify:
-    - restart logstash
+    - "logstash - restart service"
 
 - name: configure logstash parser
   template:
@@ -113,16 +105,15 @@
     - "02-logstash-vitam-filter.conf"
     - "03-logstash-vitam-output.conf"
   notify:
-    - restart logstash
+    - "logstash - restart service"
 
 - name: add vitam patterns conf
   template:
     src: "vitam-patterns.j2"
-    dest: "/usr/share/logstash/vendor/bundle/jruby/2.5.0/gems/logstash-patterns-core-4.3.1/patterns/vitam"
+    dest: "/usr/share/logstash/vendor/bundle/jruby/2.5.0/gems/logstash-patterns-core-{{ logstash_patterns_core_version }}/patterns/vitam"
     owner: "{{ logstash.user }}"
   notify:
-    - restart logstash
-
+    - "logstash - restart service"
 
 - name: configure extra parser configuration
   template:
@@ -134,7 +125,7 @@
   with_items:
     - "elasticsearch-template.json"
   notify:
-    - restart logstash
+    - "logstash - restart service"
 
 - block:
   # related to https://github.com/elastic/logstash/issues/11107
@@ -150,12 +141,12 @@
       path: /etc/ssl/certs/java/cacerts
       state: absent
     notify:
-      - restart logstash
+      - "logstash - restart service"
 
-  - name:  recreate cacerts only on Debian
+  - name: recreate cacerts only on Debian
     shell: "update-ca-certificates -f"
     notify:
-      - restart logstash
+      - "logstash - restart service"
 
   when:
     - ansible_os_family == "Debian"
@@ -181,14 +172,23 @@
   tags:
     - consul_conf
   notify:
-   - reload consul configuration
+   - "logstash - reload consul configuration"
 
-- name: Ensure consul service is started
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Ensure logstash service is started at boot
   service:
-    name: "vitam-consul"
+    name: logstash
+    enabled: "{{ logstash.at_boot | default(service_at_boot) }}"
     state: started
 
-- name: Ensure logstash service is started
-  service:
-    name: "logstash"
-    state: started
+- name: Check logstash service health in local consul agent
+  uri:
+    url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname][consul.network], '127.0.0.1') }}:8500/v1/agent/health/service/name/logstash"
+  register: result
+  until:
+    - result.status is defined
+    - result.status == 200
+  retries: "{{ vitam_defaults.services.status_retries_number }}"
+  delay: "{{ vitam_defaults.services.status_retries_delay }}"

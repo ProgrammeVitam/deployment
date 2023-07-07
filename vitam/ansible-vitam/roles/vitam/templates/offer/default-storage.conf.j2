@@ -18,6 +18,7 @@ swiftMaxConnectionsPerRoute: {{ vitam_offers[offer_conf]["swiftMaxConnectionsPer
 swiftMaxConnections: {{ vitam_offers[offer_conf]["swiftMaxConnections"] | default(1000) }}
 swiftConnectionTimeout: {{ vitam_offers[offer_conf]["swiftConnectionTimeout"] | default(200000) }}
 swiftReadTimeout: {{ vitam_offers[offer_conf]["swiftReadTimeout"] | default(60000) }}
+swiftNbRetries: {{ vitam_offers[offer_conf]["swiftNbRetries"] | default(3) }}
 swiftHardRenewTokenDelayBeforeExpireTime: {{ vitam_offers[offer_conf]["swiftHardRenewTokenDelayBeforeExpireTime"] | default(60) }}
 swiftSoftRenewTokenDelayBeforeExpireTime: {{ vitam_offers[offer_conf]["swiftSoftRenewTokenDelayBeforeExpireTime"] | default(300) }}
 {% if vitam_offers[offer_conf]["enableCustomHeaders"] is defined and vitam_offers[offer_conf]["enableCustomHeaders"] is sameas true %}
@@ -49,14 +50,23 @@ s3TrustStorePassword: {{ password_truststore }}
 
 {% if vitam_offers[offer_conf]["provider"] in ["tape-library"] %}
 tapeLibraryConfiguration:
-  inputFileStorageFolder: "{{ vitam_folder_data }}/offer/inputFiles"
-  inputTarStorageFolder: "{{ vitam_folder_data }}/offer/inputTars"
-  outputTarStorageFolder: "{{ vitam_folder_data }}/offer/outputTars"
+  inputFileStorageFolder: "{{ vitam_folder_data }}/inputFiles"
+  inputTarStorageFolder: "{{ vitam_folder_data }}/inputTars"
+  tmpTarOutputStorageFolder: "{{ vitam_folder_data }}/tmpTarOutput"
+  cachedTarStorageFolder: "{{ vitam_folder_data }}/cachedTars"
   maxTarEntrySize: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["maxTarEntrySize"] | default(100000) }}
   maxTarFileSize: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["maxTarFileSize"] | default(1000000) }}
-  useSudo: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["useSudo"] | default('false') }}
   forceOverrideNonEmptyCartridges: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["forceOverrideNonEmptyCartridges"] | default('false') }}
-  archiveRetentionCacheTimeoutInMinutes: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["archiveRetentionCacheTimeoutInMinutes"] | default(30) }}
+  cachedTarMaxStorageSpaceInMB: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["cachedTarMaxStorageSpaceInMB"] }}
+  cachedTarEvictionStorageSpaceThresholdInMB: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["cachedTarEvictionStorageSpaceThresholdInMB"] }}
+  cachedTarSafeStorageSpaceThresholdInMB: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["cachedTarSafeStorageSpaceThresholdInMB"] }}
+  maxAccessRequestSize: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["maxAccessRequestSize"] }}
+  readyAccessRequestExpirationDelay: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["readyAccessRequestExpirationDelay"] }}
+  readyAccessRequestExpirationUnit: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["readyAccessRequestExpirationUnit"] }}
+  readyAccessRequestPurgeDelay: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["readyAccessRequestPurgeDelay"] }}
+  readyAccessRequestPurgeUnit: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["readyAccessRequestPurgeUnit"] }}
+  accessRequestCleanupTaskIntervalDelay: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["accessRequestCleanupTaskIntervalDelay"] }}
+  accessRequestCleanupTaskIntervalUnit: {{ vitam_offers[offer_conf]["tapeLibraryConfiguration"]["accessRequestCleanupTaskIntervalUnit"] }}
 
   topology:
     buckets:
@@ -83,8 +93,10 @@ tapeLibraryConfiguration:
           device: {{ drive.device }}
           mtPath: "{{ drive.mtPath }}"
           ddPath: "{{ drive.ddPath }}"
-          tarPath: "{{ drive.tarPath }}"
           timeoutInMilliseconds: {{ drive.timeoutInMilliseconds }}
+          readWritePriority: {{ drive.readWritePriority | default('WRITE') }}
 {% endfor %}
+      fullCartridgeDetectionThresholdInMB: {{ library.fullCartridgeDetectionThresholdInMB }}
+
 {% endfor %}
 {% endif %}

@@ -1,0 +1,9 @@
+---
+
+- hosts: hosts_processing
+  any_errors_fatal: true
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.processing }}"
+  tags: processing

@@ -1,0 +1,14 @@
+---
+
+- hosts: hosts_metadata
+  any_errors_fatal: true
+  # First server started alone to ensure indexes are created once
+  serial:
+    - 1
+    - "100%"
+  roles:
+    - elasticsearch-mapping
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.metadata }}"
+  tags: metadata

@@ -4,10 +4,9 @@
   fail: msg="{{ vitam_site_name }} not correctly configured"
   when: vitam_site_name|regex_search('[^a-zA-Z0-9\\-]') # found a bug ; no "_" allowed
 
-
-- name: Install {{ consul.package_name }} package
+- name: "Install {{ consul.package_name | default('vitam-consul') }} package"
   package:
-    name: "{{ consul.package_name }}"
+    name: "{{ consul.package_name | default('vitam-consul') }}"
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
@@ -19,14 +18,7 @@
 - name: rustine VITAMUI ensure vitam user is member of vitamui group
   user:
     name: vitam
-    groups: vitam, {{ vitamui_defaults.users.group }}
-
-- name: Enable {{ consul.service_name }} service
-  service:
-    name: "{{ consul.service_name }}"
-    enabled: true
-  notify:
-      - restart consul
+    groups: vitam, {{ vitamui_defaults.users.group | default('vitamui') }}
 
 #### Configuration ####
 
@@ -35,8 +27,8 @@
     path: "{{ vitam_defaults.folder.root_path }}/{{ item }}/consul"
     state: directory
     owner: "{{ vitam_defaults.users.vitam }}"
-    group: "{{ vitamui_defaults.users.group }}"
-    mode: "{{ vitamui_defaults.folder.folder_permission }}"
+    group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
+    mode: "{{ vitamui_defaults.folder.folder_permission | default('0750') }}"
   with_items:
     - app
     - bin
@@ -51,10 +43,10 @@
 - name: Deploy consul common configuration files
   template:
     src: "{{ item }}.j2"
-    dest: "{{ consul.conf_folder }}/{{ item }}"
+    dest: "{{ consul.conf_folder | default('/vitam/conf/consul') }}/{{ item }}"
     owner: "{{ vitam_defaults.users.vitam }}"
-    group: "{{ vitamui_defaults.users.group }}"
-    mode: "{{ vitamui_defaults.folder.conf_permission }}"
+    group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
+    mode: "{{ vitamui_defaults.folder.conf_permission | default('0440') }}"
   with_items:
     - "consul.json"
   notify:
@@ -63,10 +55,11 @@
 # Ensure that the installation is complete and consul up before setting up the system-wide dns resolver...
 - meta: flush_handlers
 
-- name: "Ensure {{ consul.service_name }} service is started"
+- name: "Ensure {{ consul.service_name | default('vitam-consul') }} service is started"
   service:
-    name: "{{ consul.service_name }}"
+    name: "{{ consul.service_name | default('vitam-consul') }}"
     state: started
+    enabled: "{{ consul.at_boot | default(service_at_boot) }}"
 
 # Changing the resolv.conf doesn't work into a docker container...
 - name: Add consul nameserver to resolv.conf

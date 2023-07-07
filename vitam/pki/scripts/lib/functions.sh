@@ -7,7 +7,7 @@ REPERTOIRE_CA="${REPERTOIRE_ROOT}/pki/ca"
 REPERTOIRE_CONFIG="${REPERTOIRE_ROOT}/pki/config"
 TEMP_CERTS="${REPERTOIRE_ROOT}/pki/tempcerts"
 PARAM_KEY_CHIFFREMENT="rsa:4096"
-VAULT_KEYSTORES="${REPERTOIRE_ROOT}/environments/group_vars/all/vault-keystores.yml"
+VAULT_KEYSTORES="${REPERTOIRE_ROOT}/environments/group_vars/all/main/vault-keystores.yml"
 
 if [ -f "${REPERTOIRE_ROOT}/vault_pass.txt" ]; then
     ANSIBLE_VAULT_PASSWD="--vault-password-file ${REPERTOIRE_ROOT}/vault_pass.txt"
@@ -68,7 +68,9 @@ function initVault {
         ansible-vault encrypt ${VAULT_FILE} ${ANSIBLE_VAULT_PKI_PASSWD}
     else
         pki_logger "Création du fichier ${VAULT_FILE}"
-        ansible-vault create ${VAULT_FILE} ${ANSIBLE_VAULT_PKI_PASSWD}
+        mkdir -p "${VAULT_FILE%/*}"
+        touch ${VAULT_FILE}
+        ansible-vault encrypt ${VAULT_FILE} ${ANSIBLE_VAULT_PKI_PASSWD}
     fi
 
     if [ -f "${VAULT_FILE}.example" ]; then

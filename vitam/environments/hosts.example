@@ -27,6 +27,7 @@ ldap
 
 [hosts_dev_tools]
 # TODO: Put here servers where this service will be deployed : mongo-express, elasticsearch-head
+# /!\ WARNING !!! NOT FOR PRODUCTION
 
 
 [elasticsearch:children] # EXTRA : elasticsearch
@@ -51,13 +52,17 @@ hosts_ihm_demo
 hosts_ihm_recette
 
 [hosts_ihm_demo]
-# TODO: Put here servers where this service will be deployed : ihm-demo. If you own another frontend, it is recommended to leave this group blank
+# TODO: Put here servers where this service will be deployed : ihm-demo. If you use vitam-ui or your own frontend, it is recommended to leave this group blank
 # If you don't need consul for ihm-demo, you can set this var after each hostname :
 # consul_disabled=true
+# DEPRECATED / We'll soon be removed. Please consider using vitam-ui or your own front-end
+# /!\ WARNING !!! NOT recommended for PRODUCTION
 
 
 [hosts_ihm_recette]
 # TODO: Put here servers where this service will be deployed : ihm-recette (extra feature)
+# DEPRECATED / We'll soon be removed.
+# /!\ WARNING !!! NOT FOR PRODUCTION
 
 
 ##### Zone access
@@ -66,6 +71,7 @@ hosts_ihm_recette
 [zone_access:children]
 hosts_ingest_external
 hosts_access_external
+hosts_collect_external
 
 [hosts_ingest_external]
 # TODO: Put here servers where this service will be deployed : ingest-external
@@ -73,6 +79,10 @@ hosts_access_external
 
 [hosts_access_external]
 # TODO: Put here servers where this service will be deployed : access-external
+
+
+[hosts_collect_external]
+# TODO: Put here servers where this service will be deployed : collect-external
 
 
 ##### Zone applicative
@@ -86,10 +96,15 @@ hosts_worker
 hosts_access_internal
 hosts_metadata
 hosts_functional_administration
+hosts_scheduler
 hosts_logbook
 hosts_workspace
 hosts_storage_engine
 hosts_security_internal
+hosts_collect_internal
+hosts_metadata_collect
+hosts_workspace_collect
+
 
 [hosts_security_internal]
 # TODO: Put here servers where this service will be deployed : security-internal
@@ -101,7 +116,7 @@ hosts_security_internal
 
 [hosts_workspace]
 # TODO: Put the server where this service will be deployed : workspace
-# WARNING: put only one server for this service, not more !
+# WARNING: put only ONE server for this service, not more !
 
 
 [hosts_ingest_internal]
@@ -118,6 +133,11 @@ hosts_security_internal
 
 [hosts_functional_administration]
 # TODO: Put here servers where this service will be deployed : functional-administration
+
+
+[hosts_scheduler]
+# TODO: Put here servers where this service will be deployed : scheduler
+# Optional parameter after each host : vitam_scheduler_thread_count=<integer> ; This is the number of threads that are available for concurrent execution of jobs. ; default is 3 thread
 
 
 [hosts_processing]
@@ -138,6 +158,20 @@ hosts_security_internal
 # Optional parameter after each host : vitam_worker_capacity=<integer> ; please refer to your infrastructure for defining this number ; default is ansible_processor_vcpus value (cpu number in /proc/cpuinfo file)
 
 
+[hosts_collect_internal]
+# TODO: Put here servers where this service will be deployed : collect_internal
+
+
+[hosts_metadata_collect]
+# TODO: Put here servers where this service will be deployed : metadata_collect
+
+
+[hosts_workspace_collect]
+# TODO: Put the server where this service will be deployed : workspace_collect
+# WARNING: put only ONE server for this service, not more !
+
+
+
 ##### Zone storage
 
 [zone_storage:children] # DO NOT MODIFY
@@ -150,13 +184,14 @@ hosts_mongodb_offer
 # LIMIT and 1 machine per offer when filesystem or filesystem-hash provider
 # Possibility to declare multiple machines with same provider only when provider is s3 or swift.
 # Mandatory param for each offer is offer_conf and points to offer_opts.yml & vault-vitam.yml (with same tree)
+# Optionnal parameter: restic_enabled=true (only 1 per offer_conf) available for providers filesystem*, openstack-swift-v3 & amazon-s3-v1
 # for swift
-# hostname-offre-1.vitam offer_conf=offer-swift-1
+# hostname-offre-1.vitam offer_conf=offer-swift-1 restic_enabled=true
 # hostname-offre-2.vitam offer_conf=offer-swift-1
 # for filesystem
-# hostname-offre-2.vitam offer_conf=offer-fs-1
+# hostname-offre-2.vitam offer_conf=offer-fs-1 restic_enabled=true
 # for s3
-# hostname-offre-3.vitam offer_conf=offer-s3-1
+# hostname-offre-3.vitam offer_conf=offer-s3-1 restic_enabled=true
 # hostname-offre-4.vitam offer_conf=offer-s3-1
 
 
@@ -187,19 +222,19 @@ hosts_mongod_offer
 #  - mongo_cluster_name=<offer_name> ; name of the cluster (should exist on vitam_strategy configuration in offer_opts.yml)
 # Optional params
 #  - mongo_rs_bootstrap=true ; mandatory for 1 node, some init commands will be executed on it
-#  - mongo_arbiter=true ; the node will be only an arbiter, do not add this parameter on a mongo_rs_bootstrap node
 # The recommended practice is to install the mongoc instance on the same servers as the mongos instances
 # Recommended practice in production: use 3 instances
+# IMPORTANT : Updating cluster configuration is NOT supported. Do NOT add/remove a host to an existing replica set.
 # Example :
 # vitam-mongo-swift-offer-01   mongo_cluster_name=offer-swift-1   mongo_rs_bootstrap=true
 # vitam-mongo-swift-offer-02   mongo_cluster_name=offer-swift-1
-# vitam-swift-offer            mongo_cluster_name=offer-swift-1   mongo_arbiter=true
+# vitam-swift-offer            mongo_cluster_name=offer-swift-1
 # vitam-mongo-fs-offer-01      mongo_cluster_name=offer-fs-1      mongo_rs_bootstrap=true
 # vitam-mongo-fs-offer-02      mongo_cluster_name=offer-fs-1
-# vitam-fs-offer               mongo_cluster_name=offer-fs-1      mongo_arbiter=true
+# vitam-fs-offer               mongo_cluster_name=offer-fs-1
 # vitam-mongo-s3-offer-01      mongo_cluster_name=offer-s3-1      mongo_rs_bootstrap=true
 # vitam-mongo-s3-offer-02      mongo_cluster_name=offer-s3-1
-# vitam-s3-offer               mongo_cluster_name=offer-s3-1      mongo_arbiter=true
+# vitam-s3-offer               mongo_cluster_name=offer-s3-1
 
 
 [hosts_mongod_offer]
@@ -214,6 +249,7 @@ hosts_mongod_offer
 #  - mongod_memory=x ; this will force the wiredtiger cache size to x (unit is GB)
 #  - is_small=true ; this will force the priority for this server to be lower when electing master ; hardware can be downgraded for this machine
 # Recommended practice in production: use 3 instances per shard
+# IMPORTANT : Updating cluster configuration is NOT supported. Do NOT add/remove a host to an existing replica set, update shard id, arbiter mode, ou PSsmin configuration.
 # Example :
 # vitam-mongo-swift-offer-01   mongo_cluster_name=offer-swift-1   mongo_shard_id=0   mongo_rs_bootstrap=true
 # vitam-mongo-swift-offer-02   mongo_cluster_name=offer-swift-1   mongo_shard_id=0
@@ -274,6 +310,7 @@ hosts_mongod_data
 #  - mongo_rs_bootstrap=true ; mandatory for 1 node, some init commands will be executed on it
 # The recommended practice is to install the mongoc instance on the same servers as the mongos instances
 # Recommended practice in production: use 3 instances
+# IMPORTANT : Updating cluster configuration is NOT supported. Do NOT add/remove a host to an existing replica set.
 # Example :
 # vitam-mdbs-01   mongo_cluster_name=mongo-data   mongo_rs_bootstrap=true
 # vitam-mdbs-02   mongo_cluster_name=mongo-data
@@ -294,13 +331,14 @@ hosts_mongod_data
 #  - mongod_memory=x ; this will force the wiredtiger cache size to x (unit is GB) ; can be usefull when colocalization with elasticsearch
 #  - is_small=true ; this will force the priority for this server to be lower when electing master ; hardware can be downgraded for this machine
 # Recommended practice in production: use 3 instances per shard
+# IMPORTANT : Updating cluster configuration is NOT supported. Do NOT add/remove a host to an existing replica set, update shard id, arbiter mode, ou PSsmin configuration.
 # Example:
 # vitam-mdbd-01  mongo_cluster_name=mongo-data   mongo_shard_id=0   mongo_rs_bootstrap=true
 # vitam-mdbd-02  mongo_cluster_name=mongo-data   mongo_shard_id=0
-# vitam-mdbd-03  mongo_cluster_name=mongo-data   mongo_shard_id=0
+# vitam-mdbd-03  mongo_cluster_name=mongo-data   mongo_shard_id=0   is_small=true # PSsmin, this machine needs less hardware
 # vitam-mdbd-04  mongo_cluster_name=mongo-data   mongo_shard_id=1   mongo_rs_bootstrap=true
 # vitam-mdbd-05  mongo_cluster_name=mongo-data   mongo_shard_id=1
-# vitam-mdbd-06  mongo_cluster_name=mongo-data   mongo_shard_id=1
+# vitam-mdbd-06  mongo_cluster_name=mongo-data   mongo_shard_id=1   mongo_arbiter=true
 
 
 ###### Zone admin
@@ -317,14 +355,18 @@ hosts_grafana
 
 [hosts_cerebro]
 # TODO: Put here servers where this service will be deployed : vitam-elasticsearch-cerebro
+# /!\ WARNING !!! NOT recommended for PRODUCTION
 
 
 [hosts_consul_server]
 # TODO: Put here servers where this service will be deployed : consul
+# Recommended practice in production: use 3 instances
 
 
 [hosts_kibana_data]
 # TODO: Put here servers where this service will be deployed : kibana (for data cluster)
+# WARNING : DEPRECATED / We'll soon be removed.
+# /!\ WARNING !!! NOT FOR PRODUCTION
 
 
 [log_servers:children]

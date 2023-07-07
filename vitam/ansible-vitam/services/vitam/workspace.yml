@@ -1,0 +1,9 @@
+---
+
+- hosts: hosts_workspace
+  any_errors_fatal: true
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.workspace }}"
+  tags: workspace

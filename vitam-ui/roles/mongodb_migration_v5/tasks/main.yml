@@ -1,0 +1,5 @@
+---
+
+# Reconfigure replicaset for mongoc and mongod
+- include_tasks: reconfig.yml
+  when: mongo_type == 'mongod' or mongo_type == 'mongoc'

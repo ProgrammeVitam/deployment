@@ -1,0 +1,8 @@
+---
+
+- hosts: vitam
+  any_errors_fatal: true
+  roles:
+    - normalize-host
+    - selinux_conf
+    - syslogd

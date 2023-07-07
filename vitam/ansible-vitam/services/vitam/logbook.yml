@@ -1,0 +1,14 @@
+---
+
+- hosts: hosts_logbook
+  any_errors_fatal: true
+  # First server started alone to ensure indexes are created once
+  serial:
+    - 1
+    - "100%"
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.logbook }}"
+    vitam_timestamp_usage: secure-logbook
+  tags: logbook

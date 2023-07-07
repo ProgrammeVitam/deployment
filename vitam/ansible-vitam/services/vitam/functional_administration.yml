@@ -1,0 +1,13 @@
+---
+
+- hosts: hosts_functional_administration
+  any_errors_fatal: true
+  # First server started alone to ensure indexes are created once
+  serial:
+    - 1
+    - "100%"
+  roles:
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.functional_administration }}"
+  tags: functional_administration

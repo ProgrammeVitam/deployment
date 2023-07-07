@@ -1,26 +1,83 @@
 ---
 
-- name: Install mongo-express package
+- name: "Install {{ package_name }} package"
   package:
-    name: vitamui-mongo-express
+    name: "{{ package_name }}"
     state: latest
-  tags:
-    - mongod
+  register: result
+  retries: "{{ packages_install_retries_number | default(2) }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay | default(10) }}"
+  tags: mongo-express
+  notify: restart mongo-express
+  when: force_vitamui_version is not defined
 
-# TODO OMA : finaliser ce truc...
-- name: Push mongo-express scripts and config
+# Force a specific version to install (even downgrade)
+- block:
+
+  - name: "Install {{ package_name }} package"
+    apt:
+      name: "{{ package_name }}={{ force_vitamui_version }}"
+      force: yes
+      state: present
+    register: result
+    retries: "{{ packages_install_retries_number | default(2) }}"
+    until: result is succeeded
+    delay: "{{ packages_install_retries_delay | default(10) }}"
+    tags: mongo-express
+    notify: restart mongo-express
+    when: ansible_os_family == "Debian"
+
+  - name: "Install {{ package_name }} package"
+    yum:
+      name: "{{ package_name }}-{{ force_vitamui_version }}"
+      allow_downgrade : yes
+      state: present
+    register: result
+    retries: "{{ packages_install_retries_number | default(2) }}"
+    until: result is succeeded
+    delay: "{{ packages_install_retries_delay | default(10) }}"
+    tags: mongo-express
+    notify: restart mongo-express
+    when: ansible_os_family == "RedHat"
+
+  when: force_vitamui_version is defined
+
+- name: Push mongo-express script and config
   template:
     src: "env.sh.j2"
-    dest:  "{{ vitamui_defaults.folder.root_path }}/conf/mongo-express/env.sh"
-    owner: "{{ vitamui_defaults.users.vitamui }}"
-    group: "{{ vitamui_defaults.users.group }}"
+    dest: "{{ vitamui_defaults.folder.root_path | default('/vitamui') }}/conf/mongo-express/env.sh"
+    owner: "{{ vitamui_defaults.users.vitamui | default('vitamui') }}"
+    group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
     mode: 0755
+  notify: restart mongo-express
+  tags: mongo-express
 
-- name: Ensure mongo-express is started
-  systemd:
-    name:  vitamui-mongo-express
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
+#### Consul configuration ####
+- name: Deploy consul agent service declaration
+  template:
+    src: "service-componentid.json.j2"
+    dest: "{{ consul.conf_folder | default('/vitam/conf/consul') }}/service-{{ item }}.json"
+    owner: "{{ vitam_defaults.users.vitam }}"
+    group: "{{ vitam_defaults.users.group }}"
+    mode: "{{ vitam_defaults.folder.conf_permission }}"
+  with_items:
+    - "mongo-express-{{ mongo_cluster_name }}"
   tags:
-    - mongod
+    - consul_conf
+    - mongo-express
+  notify:
+   - reload consul configuration for mongo-express
+
+- meta: flush_handlers
+  tags:
+    - consul_conf
+    - mongo-express
+
+- name: Ensure mongo-express is started & at boot
+  systemd:
+    name: "{{ mongo_express.service_name | default('vitamui-mongo-express') }}"
+    state: started
+    enabled: "{{ mongo_express.at_boot | default(service_at_boot) }}"
+    daemon_reload: yes
+  tags: mongo-express

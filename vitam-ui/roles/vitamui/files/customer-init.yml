@@ -53,8 +53,18 @@ customer-init:
         - ROLE_GET_MANAGEMENT_CONTRACTS
         - ROLE_GET_ARCHIVE_PROFILES
 
-    - name: Profil pour les services agents
-      description: Gestion des services agents dans Vitam
+    - name: Profil consultation des contrats d'entrée
+      description: Profil pour la consultation des contrats d'entrée dans Vitam sans mises à jour des contrats
+      app-name: INGEST_APP
+      level:
+      roles:
+        - ROLE_GET_INGEST_CONTRACTS
+        - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_MANAGEMENT_CONTRACTS
+        - ROLE_GET_ARCHIVE_PROFILES
+
+    - name:  Profil gestion des services agents
+      description: Profil de gestion du référentiel des services agent avec possibilité de mise à jour
       app-name: AGENCIES_APP
       level:
       roles:
@@ -64,6 +74,13 @@ customer-init:
         - ROLE_DELETE_AGENCIES
         - ROLE_EXPORT_AGENCIES
         - ROLE_IMPORT_AGENCIES
+
+    - name: Profil consultation des services agents
+      description: Profil de consultation du référentiel des services agent sans possibilité de mise à jour
+      app-name: AGENCIES_APP
+      level:
+      roles:
+        - ROLE_GET_AGENCIES
 
     - name: Profil pour la gestion des Audits
       description: Gestion des audits dans Vitam
@@ -133,6 +150,13 @@ customer-init:
         - ROLE_IMPORT_RULES
         - ROLE_EXPORT_RULES
 
+    - name: Profil consultation des règles de gestion
+      description: Profil pour la consultation des règles de gestion dans Vitam sans mises à jour des règles
+      app-name: RULES_APP
+      level:
+      roles:
+        - ROLE_GET_RULES
+
     - name: Lancement de recherches par DSL
       description: Lancement de recherches par DSL dans Vitam
       app-name: DSL_APP
@@ -162,7 +186,7 @@ customer-init:
         - ROLE_LOGBOOKS
 
     - name: Consultation
-      description: Profil pour la recherche et consultation des archives dans Vitam avec mises à jour des règles, sans export DIP et sans élimination
+      description: Profil pour la recherche et consultation des archives dans Vitam sans mises à jour des règles, sans export DIP et sans élimination
       app-name: ARCHIVE_SEARCH_MANAGEMENT_APP
       level:
       roles:
@@ -170,9 +194,11 @@ customer-init:
         - ROLE_GET_ARCHIVE_SEARCH
         - ROLE_GET_ALL_ARCHIVE_SEARCH
         - ROLE_SEARCH_WITH_RULES
+        - ROLE_GET_ACCESS_CONTRACTS
+        - ROLE_GET_RULES
 
     - name: Archiviste
-      description: Profil pour la recherche et consultation des archives dans Vitam avec mises à jour des règles de gestion, avec export DIP et sans élimination
+      description: Profil pour la recherche et consultation des archives dans Vitam sans mises à jour des règles de gestion, avec export DIP et sans élimination
       app-name: ARCHIVE_SEARCH_MANAGEMENT_APP
       level:
       roles:
@@ -181,9 +207,11 @@ customer-init:
         - ROLE_GET_ALL_ARCHIVE_SEARCH
         - ROLE_EXPORT_DIP
         - ROLE_SEARCH_WITH_RULES
+        - ROLE_GET_ACCESS_CONTRACTS
+        - ROLE_GET_RULES
 
     - name: Archiviste administrateur
-      description: Profil pour la recherche et consultation des archives dans Vitam avec mises à jour des règles, export DIP et opérations d'élimination
+      description: Profil pour la recherche et consultation des archives dans Vitam avec mise à jour des règles, export DIP, opérations d'élimination, reclassement, demande de transfert et acquittement de transfert
       app-name: ARCHIVE_SEARCH_MANAGEMENT_APP
       level:
       roles:
@@ -193,6 +221,14 @@ customer-init:
         - ROLE_SEARCH_WITH_RULES
         - ROLE_EXPORT_DIP
         - ROLE_ELIMINATION
+        - ROLE_UPDATE_MANAGEMENT_RULES
+        - ROLE_COMPUTED_INHERITED_RULES
+        - ROLE_GET_ACCESS_CONTRACTS
+        - ROLE_RECLASSIFICATION
+        - ROLE_UPDATE_UNIT_DESC_METADATA
+        - ROLE_TRANSFER_REQUEST
+        - ROLE_TRANSFER_ACKNOWLEDGMENT
+        - ROLE_GET_RULES
 
     - name: Registre des fonds
       description: Visualisation de l'ensemble des données du registre des fonds
@@ -200,6 +236,58 @@ customer-init:
       level:
       roles:
         - ROLE_GET_ACCESSION_REGISTER_DETAIL
+
+    - name: Pastis-Gestion des profils documentaires
+      description: Pastis-Gestion des profils documentaires
+      app-name: PASTIS_APP
+      level:
+      roles:
+        - ROL_GET_PASTIS
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_UPDATE_ARCHIVE_PROFILES_UNIT
+        - ROLE_CREATE_ARCHIVE_PROFILES_UNIT
+        - ROLE_IMPORT_ARCHIVE_PROFILES_UNIT
+        - ROLE_DELETE_ARCHIVE_PROFILES_UNIT
+        - ROLE_GET_ARCHIVE_PROFILES
+        - ROLE_UPDATE_ARCHIVE_PROFILES
+        - ROLE_CREATE_ARCHIVE_PROFILES
+        - ROLE_IMPORT_ARCHIVE_PROFILES
+        - ROLE_DELETE_ARCHIVE_PROFILES
+
+
+
+    - name: Collecte
+      description: Collecte de données, Application de préparation de versements
+      app-name: COLLECT_APP
+      level:
+      roles:
+        - ROLE_GET_PROJECTS
+        - ROLE_CREATE_PROJECTS
+        - ROLE_UPDATE_PROJECTS
+        - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_ACCESS_CONTRACTS
+        - ROLE_GET_RULES
+        - ROLE_SEND_TRANSACTIONS
+        - ROLE_CLOSE_TRANSACTIONS
+        - ROLE_REOPEN_TRANSACTIONS
+        - ROLE_ABORT_TRANSACTIONS
+        - ROLE_GET_TRANSACTIONS
+        - ROLE_CREATE_TRANSACTIONS
+        - ROLE_UPDATE_TRANSACTIONS
+        - ROLE_DELETE_TRANSACTIONS
+        - ROLE_UPDATE_UNITS_METADATA
+
+    - name: Profil pour les contrats de gestion
+      description: Contrats de gestion
+      app-name: MANAGEMENT_CONTRACT_APP
+      level:
+      roles:
+        - ROLE_GET_MANAGEMENT_CONTRACT
+        - ROLE_CREATE_MANAGEMENT_CONTRACT
+        - ROLE_UPDATE_MANAGEMENT_CONTRACT
+        - ROLE_DELETE_MANAGEMENT_CONTRACT
+
+
   # Other Default profiles for admin group
   admin-profiles:
   #- name: profileName

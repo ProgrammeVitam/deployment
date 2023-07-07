@@ -1,0 +1,16 @@
+---
+
+cerebro:
+  secret_key: change_it-tGz28hJkiW[p@a34G
+  # Comment the following lines to disable the basic authentication on Cerebro UI
+  basicauth:
+    username: vitam_admin
+    password: change_it-aadmin1234
+
+grafana:
+  admin_user: vitam_admin
+  admin_password: change_it-aadmin1234
+
+restic:
+  # Remembering your password is important! Backups are encrypted with it. If you lose it, you won’t be able to access data stored in the repository.
+  password: vitam

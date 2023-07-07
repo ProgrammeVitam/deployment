@@ -1,0 +1,15 @@
+---
+
+vitam_additional_securityprofiles:
+  - name: vitamui-security-profile
+    identifier: vitamui-security-profile
+    hasFullAccess: true
+    permissions: "null"
+    contexts:
+      - name: vitamui-context
+        identifier: vitamui-context
+        status: ACTIVE
+        enable_control: false
+        # No control, idc about permissions :)
+        permissions: "[ { \"tenant\": 0, \"AccessContracts\": [], \"IngestContracts\": [] }, { \"tenant\": 1, \"AccessContracts\": [], \"IngestContracts\": [] }]"
+        certificates: ['external/vitamui.crt']

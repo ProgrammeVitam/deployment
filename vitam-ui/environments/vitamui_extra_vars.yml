@@ -35,11 +35,15 @@ vitamui_platform_informations:
 # repositories.yml
 vitam_repositories:
   - key: vitamui
-    value: https://download.programmevitam.fr/vitamui/5.rc.1/rpm/
+    value: https://download.programmevitam.fr/vitamui_nightly/rpm/
   - key: vitam-product
-    value: https://download.programmevitam.fr/vitam_repository/5.rc.1/rpm/vitam-product/
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-product/
   - key: vitam-external
-    value: https://download.programmevitam.fr/vitam_repository/5.rc.1/rpm/vitam-external/
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-external/
+  - key: vitam-core
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-core/
+  - key: vitam-extras
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-extras/
 
 # To avoid installation of internet repositories (like epel for example)
 disable_internet_repositories_install: true # default value if unset: false

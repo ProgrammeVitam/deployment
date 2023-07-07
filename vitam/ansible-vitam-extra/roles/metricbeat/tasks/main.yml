@@ -1,13 +1,4 @@
 ---
-# tasks file for topbeat
-- name: Ensure old topbeat package is absent
-  package:
-    name: topbeat
-    state: absent
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
 
 - name: install metricbeat package
   package:
@@ -65,17 +56,17 @@
 - name: import dashboards
   shell: /usr/bin/metricbeat setup --dashboards
   run_once: true
-  when: "{{ (groups['hosts_kibana_log'] | length) > 0}}"
+  when: groups['hosts_kibana_log'] | length > 0
   delegate_to: "{{ groups['hosts_kibana_log'][0] }}"
   retries: 5
   delay: 30
   register: result
   until: result.rc == 0
   notify:
-    - restart kibana
+    - "metricbeat - restart kibana"
 
 - name: restart metricbeat
   service:
     name: metricbeat
     state: restarted
-    enabled: true
+    enabled: "{{ metricbeat.at_boot | default(service_at_boot) }}"

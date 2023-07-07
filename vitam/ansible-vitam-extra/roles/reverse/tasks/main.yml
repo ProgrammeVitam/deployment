@@ -2,42 +2,17 @@
 
 - import_tasks: mongo_compute.yml
 
-- name: Set apache service name for CentOS
-  set_fact:
-    apache_service: "httpd"
-    apache_conf_dir: "conf.d"
-    apache_user: "apache"
-    apache_group: "apache"
-    mime_type_package: "mailcap"
-  when: ansible_os_family == "RedHat"
+- name: include OS-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
 
-- name: Set apache service name for Debian
-  set_fact:
-    apache_service: "apache2"
-    apache_conf_dir: "sites-available"
-    apache_user: "root"
-    apache_group: "root"
-    mime_type_package: "mime-support"
-  when: ansible_os_family == "Debian"
-
-- name: install {{ mime_type_package }} & {{ apache_service }} packages
+- name: install packages for reverse
   package:
-    name: ["{{ mime_type_package }}","{{ apache_service }}"]
+    name: "{{ package_list }}"
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
-
-- name: Ensure mod_ssl is installed (CentOS)
-  package:
-    name: mod_ssl
-    state: present
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when: ansible_os_family == "RedHat"
 
 # TODO: We could use apache2_module of ansible but it is currently flagged as preview
 - name: Enable mod_ssl & mod_proxy (Debian)
@@ -55,7 +30,7 @@
     - proxy_http.load
     - socache_shmcb.load
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: create DocumentRoot directory
   file:
@@ -64,7 +39,7 @@
     owner: root
     mode: 0755
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: create certificates directory
   file:
@@ -95,7 +70,7 @@
       - js
       - favicon.ico
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: copy index default page
   template:
@@ -107,7 +82,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 #OMA: if problem with apache2 restart due to absent pem, manually remove on reverse the above p12 file and relaunch playbook
 - name: copy certificate
@@ -138,7 +113,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: add js & css to mod_mime
   copy:
@@ -149,7 +124,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: limit info in reverse headers
   copy:
@@ -160,7 +135,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: remove default index page on Debian
   file:
@@ -170,7 +145,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: activate httpd configuration for debian
   file:
@@ -185,7 +160,7 @@
   tags:
     - update_package_vitam
   notify:
-     - reload apache
+     - "reverse - reload apache"
 
 - name: Ensure Apache autostart && Apache is started
   service:

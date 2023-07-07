@@ -1,0 +1,13 @@
+---
+
+- hosts: hosts_consul_server
+  any_errors_fatal: true
+  roles:
+    - consul
+  tags: consul_server
+
+- hosts: vitam
+  any_errors_fatal: true
+  roles:
+    - { role: consul, when: "( inventory_hostname not in groups['hosts_consul_server'] ) and ( consul_disabled | default(false) | bool == false )" }
+  tags: consul_agent

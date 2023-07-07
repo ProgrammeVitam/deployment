@@ -70,21 +70,52 @@
 
     # Copy the mongodb scripts
 
-    - name: Copy the database scripts files
+    - name: Copy the database scripts files for mongo-data
       template:
         src: "{{ item }}"
         dest: "{{ vitam_defaults.folder.root_path }}/app/mongos/{{ item | basename | regex_replace('\\.j2$') }}"
         owner: "{{ vitam_defaults.users.vitamdb }}"
         group: "{{ vitam_defaults.users.group }}"
         mode: "{{ vitam_defaults.folder.conf_permission }}"
-      with_fileglob:
-        - "{{ role_path }}/templates/mongo-data/*"
+      loop:
+        - "mongo-data/enable-sharding.js.j2"
+        - "mongo-data/init-identity-database.js.j2"
+        - "mongo-data/init-logbook-database.js.j2"
+        - "mongo-data/init-masterdata-database.js.j2"
+        - "mongo-data/init-metadata-database.js.j2"
+        - "mongo-data/init-report-database.js.j2"
+        - "mongo-data/users-admin.js.j2"
+        - "mongo-data/users-identity.js.j2"
+        - "mongo-data/users-logbook.js.j2"
+        - "mongo-data/users-masterdata.js.j2"
+        - "mongo-data/users-metadata.js.j2"
+        - "mongo-data/users-report.js.j2"
+        - "mongo-data/users-scheduler.js.j2"
       when:
         - "mongo_cluster_name == 'mongo-data'"
       tags:
         - update_mongodb_configuration
 
-    - name: Copy the database scripts files
+    - name: Copy the database scripts files for collect module
+      template:
+        src: "{{ item }}"
+        dest: "{{ vitam_defaults.folder.root_path }}/app/mongos/{{ item | basename | regex_replace('\\.j2$') }}"
+        owner: "{{ vitam_defaults.users.vitamdb }}"
+        group: "{{ vitam_defaults.users.group }}"
+        mode: "{{ vitam_defaults.folder.conf_permission }}"
+      loop:
+        - "mongo-data/init-collect-database.js.j2"
+        - "mongo-data/init-metadata-collect-database.js.j2"
+        - "mongo-data/users-collect.js.j2"
+        - "mongo-data/users-metadata-collect.js.j2"
+      when: >
+        mongo_cluster_name == 'mongo-data' and
+        groups['hosts_collect_internal'] | default([]) | length > 0 and
+        groups['hosts_metadata_collect'] | default([]) | length > 0
+      tags:
+        - update_mongodb_configuration
+
+    - name: Copy the database scripts files for mongo-offer
       template:
         src: "{{ item }}"
         dest: "{{ vitam_defaults.folder.root_path }}/app/mongos/{{ item | basename | regex_replace('\\.j2$') }}"
@@ -115,8 +146,22 @@
         - metadata
         - identity
         - report
+        - scheduler
       no_log: "{{ hide_passwords_during_deploy }}"
       when: "mongo_cluster_name == 'mongo-data'"
+      tags:
+        - update_mongodb_configuration
+
+    - name: Create collect module users
+      command: "mongo {{ ip_service }}:{{ mongodb.mongos_port }}/admin {{ mongo_credentials }} {{ vitam_defaults.folder.root_path }}/app/mongos/users-{{ item }}.js"
+      with_items:
+        - collect
+        - metadata-collect
+      no_log: "{{ hide_passwords_during_deploy }}"
+      when: >
+        mongo_cluster_name == 'mongo-data' and
+        groups['hosts_collect_internal'] | default([]) | length > 0 and
+        groups['hosts_metadata_collect'] | default([]) | length > 0
       tags:
         - update_mongodb_configuration
 
@@ -135,7 +180,7 @@
     - name: Activate security on mongos instances
       blockinfile:
         dest: "{{ mongos_config_path }}/mongos.conf"
-        insertafter: "# ansible managed security conf"
+        insertafter: EOF
         block: |
           security:
             clusterAuthMode: keyFile
@@ -150,7 +195,7 @@
     - name: Activate security on mongod instances
       blockinfile:
         dest: "{{ mongod_config_path }}/mongod.conf"
-        insertafter: "# ansible managed security conf"
+        insertafter: EOF
         block: |
           security:
             authorization: enabled
@@ -166,7 +211,7 @@
     - name: Activate security on mongoc instances
       blockinfile:
         dest: "{{ mongoc_config_path }}/mongoc.conf"
-        insertafter: "# ansible managed security conf"
+        insertafter: EOF
         block: |
           security:
             authorization: enabled
@@ -183,9 +228,9 @@
 
     - name: restart mongod
       service:
-         name: vitam-mongod
-         enabled: true
-         state: restarted
+        name: vitam-mongod
+        enabled: "{{ mongodb.at_boot | default(service_at_boot) }}"
+        state: restarted
       delegate_to: "{{ item }}"
       when:
         - "mongo_cluster_name == hostvars[item]['mongo_cluster_name']"
@@ -195,9 +240,9 @@
 
     - name: restart mongoc
       service:
-         name: vitam-mongoc
-         enabled: true
-         state: restarted
+        name: vitam-mongoc
+        enabled: "{{ mongodb.at_boot | default(service_at_boot) }}"
+        state: restarted
       delegate_to: "{{ item }}"
       when:
         - "mongo_cluster_name == hostvars[item]['mongo_cluster_name']"
@@ -207,9 +252,9 @@
 
     - name: restart mongos
       service:
-         name: vitam-mongos
-         enabled: true
-         state: restarted
+        name: vitam-mongos
+        enabled: "{{ mongodb.at_boot | default(service_at_boot) }}"
+        state: restarted
       delegate_to: "{{ item }}"
       when:
         - "mongo_cluster_name == hostvars[item]['mongo_cluster_name']"
@@ -218,18 +263,51 @@
         - update_mongodb_configuration
 
     # Make sure the service is open (mongos listening on 27017 by default)
-
     - name: Wait for the service port to be open
-      wait_for: host={{ ip_service }} port={{ mongodb.mongos_port }} timeout="{{ vitam_defaults.services.start_timeout }}"
+      wait_for:
+        host: "{{ ip_service }}"
+        port: "{{ mongodb.mongos_port }}"
+        timeout: "{{ vitam_defaults.services.start_timeout }}"
+      tags:
+        - update_mongodb_configuration
+
+    - name: Copy wait_until_mongos_is_ok script
+      copy:
+        src: "{{ item }}"
+        dest: "{{ vitam_defaults.folder.root_path }}/script/mongos"
+        owner: "{{ vitam_defaults.users.vitamdb }}"
+        group: "{{ vitam_defaults.users.group }}"
+        mode: "{{ vitam_defaults.folder.conf_permission }}"
+      with_items:
+        - wait_until_mongos_is_ok.js
+      tags:
+        - update_mongodb_configuration
+
+    - name: Wait 10 seconds for mongos to be properly started...
+      wait_for:
+        timeout: 10
+      tags: update_mongodb_configuration
+
+    - name: Wait for mongos to be properly connected to databases
+      shell: "mongosh {{ ip_service }}:{{ mongodb.mongos_port }}/admin -u {{ mongodb[mongo_cluster_name].admin.user }} -p {{ mongodb[mongo_cluster_name].admin.password }} --quiet --file {{ vitam_defaults.folder.root_path }}/script/mongos/wait_until_mongos_is_ok.js"
+      no_log: "{{ hide_passwords_during_deploy }}"
+      ignore_errors: true # To properly catch output on the next task
+      register: output_mongos_state
+      tags:
+        - update_mongodb_configuration
+
+    - name: Fail if mongos state is incorrect
+      assert:
+        fail_msg: "{{ output_mongos_state.stderr_lines }}"
+        success_msg: "{{ output_mongos_state.stdout_lines }}"
+        that: output_mongos_state.rc == 0
       tags:
         - update_mongodb_configuration
 
     # Initiate the databases (now we know that authentication is enabled)
-
     - name: Initiate the databases
       command: "mongo {{ ip_service }}:{{ mongodb.mongos_port }}/admin -u {{ mongodb[mongo_cluster_name].admin.user }} -p {{ mongodb[mongo_cluster_name].admin.password }} --quiet {{ vitam_defaults.folder.root_path }}/app/mongos/init-{{ item }}-database.js"
       with_items:
-        - admin
         - logbook
         - masterdata
         - metadata
@@ -240,11 +318,24 @@
       tags:
         - update_mongodb_configuration
 
+    - name: Initiate metadata-collect database
+      command: "mongo {{ ip_service }}:{{ mongodb.mongos_port }}/admin -u {{ mongodb[mongo_cluster_name].admin.user }} -p {{ mongodb[mongo_cluster_name].admin.password }} --quiet {{ vitam_defaults.folder.root_path }}/app/mongos/init-{{ item }}-database.js"
+      with_items:
+        - collect
+        - metadata-collect
+      no_log: "{{ hide_passwords_during_deploy }}"
+      when: >
+        mongo_cluster_name == 'mongo-data' and
+        groups['hosts_collect_internal'] | default([]) | length > 0 and
+        groups['hosts_metadata_collect'] | default([]) | length > 0
+      tags:
+        - update_mongodb_configuration
+
     - name: Initiate the databases
       command: "mongo {{ ip_service }}:{{ mongodb.mongos_port }}/admin -u {{ mongodb[mongo_cluster_name].admin.user }} -p {{ mongodb[mongo_cluster_name].admin.password }} --quiet {{ vitam_defaults.folder.root_path }}/app/mongos/init-{{ item }}-database.js"
       with_items:
-        - admin
         - offer
+        - tape-offer
       no_log: "{{ hide_passwords_during_deploy }}"
       when: "mongo_cluster_name != 'mongo-data'"
       tags:

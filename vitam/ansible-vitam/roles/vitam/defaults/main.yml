@@ -1,7 +1,6 @@
 ---
 # defaults file for common
 memory_opts: -Xms512m -Xmx512m
-timer_memory_opts: -Xms32m -Xmx128m
 gc_opts: "-Xlog:gc*,gc+age=trace,safepoint:file={{ vitam_folder_log }}/gc.log:utctime,pid,tags:filecount=32,filesize=64m"
 jmx_exporter_opts: ""
 java_opts: ""
@@ -15,10 +14,9 @@ package_name: "vitam-{{ vitam_struct.vitam_component }}"
 
 vitam_worker_capacity: "{{ ansible_processor_vcpus }}"
 
-vitam_site_id: 1
+vitam_scheduler_thread_count: "{{ vitam.scheduler.schedulerThreadSize | default(3) }}"
 
-# Trust X-SSL-CLIENT-CERT header for external api auth ? (true | false)
-vitam_ssl_user_header: "{{ vitam_defaults.vitam_ssl_user_header | default(false) }}"
+vitam_site_id: 1
 
 consul_business_check: "{{ vitam_defaults.consul_business_check | default(10) }}"
 consul_admin_check: "{{ vitam_defaults.consul_admin_check | default(10) }}"
@@ -36,10 +34,10 @@ logback_max_file_size: "{{ vitam_defaults.logback_max_file_size | default('10MB'
 logback_total_size_cap:
   file:
     history_days: "{{ vitam_defaults.logback_total_size_cap.file.history_days | default(30) }}"
-    totalsize: "{{ vitam_defaults.logback_total_size_cap.file.history_days | default('5GB') }}"
+    totalsize: "{{ vitam_defaults.logback_total_size_cap.file.totalsize | default('5GB') }}"
   security:
     history_days: "{{ vitam_defaults.logback_total_size_cap.security.history_days | default(30) }}"
-    totalsize: "{{ vitam_defaults.logback_total_size_cap.security.history_days | default('5GB') }}"
+    totalsize: "{{ vitam_defaults.logback_total_size_cap.security.totalsize | default('5GB') }}"
 
 reconstruction:
   log_level: "{{ vitam_defaults.reconstruction.log_level | default('INFO') }}"

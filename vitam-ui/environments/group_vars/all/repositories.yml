@@ -6,11 +6,17 @@
 # repositories.yml
 vitam_repositories:
   - key: vitamui
-    value: https://download.programmevitam.fr/vitamui/5.rc.1/rpm/
+    value: https://download.programmevitam.fr/vitamui_nightly/rpm/
     proxy: ""
   - key: vitam-product
-    value: https://download.programmevitam.fr/vitam_repository/5.rc.1/rpm/vitam-product/
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-product/
     proxy: ""
   - key: vitam-external
-    value: https://download.programmevitam.fr/vitam_repository/5.rc.1/rpm/vitam-external/
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-external/
+    proxy: ""
+  - key: vitam-core
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-core/
+    proxy: ""
+  - key: vitam-extras
+    value: https://download.programmevitam.fr/vitam_nightly/rpm/vitam-extras/
     proxy: ""

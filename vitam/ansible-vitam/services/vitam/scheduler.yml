@@ -1,0 +1,10 @@
+---
+
+- hosts: hosts_scheduler
+  any_errors_fatal: true
+  roles:
+    - vitam
+    - init_scheduler_jobs
+  vars:
+    vitam_struct: "{{ vitam.scheduler }}"
+  tags: scheduler

@@ -62,17 +62,12 @@
 
 - name: Install Avast and required packages
   package:
-    name: "{{ item }}"
+    name: [ 'avast', 'unzip', 'gzip', 'bzip2' ]
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
-  loop:
-    - avast
-    - unzip
-    - gzip
-    - bzip2
 
 - name: Adding {{ vitam_defaults.users.group }} group to avast so it can scan {{ vitam_defaults.users.group }}-based files
   user:
@@ -120,15 +115,15 @@
     dest: /etc/avast/whitelist
     owner: avast
     group: avast
-    mode: 0640
+    mode: 0644
   notify: restart avast
 
 - meta: flush_handlers
 
-- name: Ensure Avast daemon is started at boot
+- name: Ensure Avast daemon is started
   service:
     name: avast
-    enabled: yes
+    enabled: "{{ avast.at_boot | default(service_at_boot) }}"
     state: started
 
 - name: Enable logrotate for Avast

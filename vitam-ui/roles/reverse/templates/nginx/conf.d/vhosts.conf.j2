@@ -2,7 +2,7 @@ include /etc/nginx/conf.d/upstream;
 
 server {
 
-  listen 443 ssl;
+  listen {{ ip_service }}:443 ssl;
   include {{ nginx_ssl_conf }}/ssl.conf;
 
   server_name {{ vitam_reverse_external_dns }};
@@ -59,6 +59,34 @@ server {
   location /archive-search {
     proxy_pass https://ARCHIVE_SEARCH/archive-search;
     include /etc/nginx/conf.d/proxy_params;
+  }
+{% endif %}
+
+{% if groups['hosts_ui_pastis']|length > 0 %}
+  # UI PASTIS
+  location /pastis {
+    proxy_pass https://PASTIS/pastis;
+    include /etc/nginx/conf.d/proxy_params;
+  }
+{% endif %}
+
+
+{% if groups['hosts_ui_collect']|length > 0 %}
+  # UI COLLECT
+  location /collect {
+    proxy_pass https://COLLECT/collect;
+    include /etc/nginx/conf.d/proxy_params;
+
+    # http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_request_buffering
+    # The request body is sent to the proxied server immediately as it is received.
+    proxy_request_buffering off;
+
+    # http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+    # Sets the maximum allowed size of the client request body.
+    # If the size in a request exceeds the configured value, the 413 (Request Entity Too Large) error is returned to the client.
+    # Please be aware that browsers cannot correctly display this error.
+    # Setting size to 0 disables checking of client request body size.
+    client_max_body_size 0;
   }
 {% endif %}
 

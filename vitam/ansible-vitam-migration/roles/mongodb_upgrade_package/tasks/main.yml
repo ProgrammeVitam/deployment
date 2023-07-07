@@ -1,0 +1,17 @@
+---
+
+- name: Update mongosh package
+  package:
+    name:
+      - mongodb-mongosh
+    state: latest
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+
+- include_tasks: update_packages_mongod.yml
+  when: mongo_type == 'mongoc' or mongo_type == 'mongod'
+
+- include_tasks: update_packages_mongos.yml
+  when: mongo_type == 'mongos'

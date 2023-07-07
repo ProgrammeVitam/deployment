@@ -1,4 +1,5 @@
 [hosts]
+localhost ip_service=172.17.0.2 ip_admin=172.17.0.2
 
 [hosts:children]
 vitam
@@ -48,10 +49,13 @@ hosts_ihm_demo
 [zone_access:children]
 hosts_ingest_external
 hosts_access_external
+hosts_collect_external
 
 [hosts_ingest_external]
 
 [hosts_access_external]
+
+[hosts_collect_external]
 
 ##### Zone applicative
 
@@ -63,10 +67,14 @@ hosts_worker
 hosts_access_internal
 hosts_metadata
 hosts_functional_administration
+hosts_scheduler
 hosts_logbook
 hosts_workspace
 hosts_storage_engine
 hosts_security_internal
+hosts_collect_internal
+hosts_metadata_collect
+hosts_workspace_collect
 
 [hosts_security_internal]
 
@@ -82,6 +90,8 @@ hosts_security_internal
 
 [hosts_functional_administration]
 
+[hosts_scheduler]
+
 [hosts_processing]
 
 [hosts_storage_engine]
@@ -90,6 +100,12 @@ hosts_security_internal
 
 [hosts_worker]
 
+[hosts_collect_internal]
+
+[hosts_metadata_collect]
+
+[hosts_workspace_collect]
+
 ##### Zone storage
 
 [zone_storage:children]
@@ -97,7 +113,7 @@ hosts_storage_offer_default
 hosts_mongodb_offer
 
 [hosts_storage_offer_default]
-localhost offer_conf=offer-fs-1
+
 
 [hosts_mongodb_offer:children]
 hosts_mongos_offer
@@ -198,7 +214,6 @@ dns_servers=["10.100.211.222", "8.8.8.8"]
 
 ### memory settings ###
 memory_opts="-Xms32m -Xmx256m"
-timer_memory_opts="-Xms32m -Xmx128m"
 
 vitam_site_name=cots
 primary_site=true

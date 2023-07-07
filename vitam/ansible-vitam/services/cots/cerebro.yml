@@ -1,0 +1,7 @@
+---
+
+- hosts: hosts_cerebro
+  any_errors_fatal: true
+  roles:
+    - cerebro
+  tags: cerebro

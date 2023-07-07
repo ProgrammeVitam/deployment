@@ -3,24 +3,6 @@
 - name: Populate service facts
   service_facts:
 
-- name: Set command for CentOS
-  set_fact:
-    check_es_version: "rpm -q vitam-{{ composant.cluster_name }}"
-  when: ansible_os_family == "RedHat"
-
-- name: Set command for Debian
-  set_fact:
-    check_es_version: "dpkg-query -l  'vitam-{{ composant.cluster_name }}'"
-  when: ansible_os_family == "Debian"
-
-- name: checking whether elasticsearch package is already installed
-  shell : "{{ check_es_version }}"
-  register: is_installed
-  ignore_errors: true
-
-- import_tasks: pre_migration.yml
-  when: is_installed.stdout.find('5.6.') != -1
-
 - name: Set default directory for RedHat family
   set_fact:
     sysconfig_dir: "sysconfig"
@@ -34,7 +16,6 @@
     jvm_security_path: "/usr/lib/jvm/java-11-openjdk-amd64/jre/lib/security"
     java_package: "{{ java_prerequisites.debian }}"
   when: ansible_os_family == "Debian"
-
 
 - name: Update elasticsearch memory value if empty and total memory < 64 Go
   set_fact:
@@ -50,7 +31,6 @@
     - ansible_memory_mb.real.total >= 65536
     - elasticsearch_memory == ""
 
-
 - name: Define temporary memory size & unit vars
   set_fact:
     elasticsearch_memory_value: "{{ elasticsearch_memory| regex_replace('[kKmMgG]','') }}"
@@ -58,52 +38,18 @@
 
 #### Elasticsearch installation ####
 
-# Only prerequisite for Debian : install openjdk from stretch-backports
-- name: "install openjdk from {{ ansible_distribution_release }}-backports only when Debian (prerequisite for elasticsearch package)"
-  apt:
-    name: "{{ java_package }}"
-    state: latest
-    default_release: "{{ ansible_distribution_release }}-backports"
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when:
-    - ansible_os_family == "Debian"
-    - disable_internet_repositories_install == false
-
-- name: "install openjdk only when Debian (prerequisite for elasticsearch package)"
-  apt:
-    name: "{{ java_package }}"
-    state: latest
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when:
-    - ansible_os_family == "Debian"
-    - disable_internet_repositories_install == true
-
-- name: install openjdk when CentOS (prerequisite for elasticsearch package)
-  package:
-    name: "{{ java_package }}"
-    state: latest
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when: ansible_os_family == "RedHat"
-
 - name: install vitam-{{ composant.cluster_name }} package
   package:
-    name: vitam-{{ composant.cluster_name }}
+    name:
+      - "vitam-{{ composant.cluster_name }}"
+      - "{{ java_package }}"
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: apply java MBean security
   blockinfile:
@@ -155,7 +101,7 @@
     - lib
     - tmp
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: Ensure elasticsearch sysconfig directory exist
   file:
@@ -165,7 +111,7 @@
     state: directory
     mode: "{{ vitam_defaults.folder.folder_permission }}"
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: If already configured, remove limits max_open_files for Elasticsearch
   lineinfile:
@@ -174,18 +120,7 @@
     state: absent
   when: elasticsearch_max_open_files is defined
   notify:
-    - restart elasticsearch
-
-- name: Do not configure memlock limits anymore in /etc/security/limits.conf as it is now managed by systemD
-  blockinfile:
-    path: /etc/security/limits.conf
-    state: absent
-    marker: "<!-- {mark} ansible memlock for elasticsearch -->"
-    block: |
-      {{ vitam_defaults.users.vitamdb }} soft memlock unlimited
-      {{ vitam_defaults.users.vitamdb }} hard memlock unlimited
-  notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: apply elasticsearch configuration yml
   template:
@@ -195,7 +130,7 @@
     group: "{{ vitam_defaults.users.group }}"
     mode: "{{ vitam_defaults.folder.conf_permission }}"
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: apply logging for elasticsearch configuration file
   template:
@@ -208,7 +143,7 @@
     - "log4j2.properties"
     - "jvm.options"
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 - name: apply elasticsearch sysconfig default
   template:
@@ -218,20 +153,20 @@
     group: "{{ vitam_defaults.users.group }}"
     mode: "{{ vitam_defaults.folder.conf_permission }}"
   notify:
-    - restart elasticsearch
+    - "elasticsearch-cluster - restart service"
 
 #### Elasticsearch systemd service configuration ####
 
 # Cf. https://serverfault.com/questions/546966/whats-removing-stuff-from-var-run-at-reboots-from-a-fedora-machine
 # Cf. https://www.freedesktop.org/software/systemd/man/tmpfiles.d.html
-- name: add {{ composant.cluster_name }}.conf in tempfile.d
+- name: add {{ composant.cluster_name }}.conf in tmpfiles.d
   template:
     src: "tempfile.d-elasticsearch.conf.j2"
     dest: "/usr/lib/tmpfiles.d/{{ composant.cluster_name }}.conf"
     owner: root
     group: root
     mode: 0644
-  notify: create systemd tmpfiles
+  notify: "elasticsearch-cluster - create systemd tmpfiles"
 
 - name: force user on file elasticsearch-keystore
   file:
@@ -260,25 +195,36 @@
   tags:
     - consul_conf
   notify:
-   - reload consul configuration
+   - "elasticsearch-cluster - reload consul configuration"
 
-# Force flush handlers to be sure previous role handlers have been run (for index templates)
 - meta: flush_handlers
 
-- name: Ensure consul service is started
-  service:
-    name: "vitam-consul"
-    state: started
-
-- name: Ensure service vitam-{{ composant.cluster_name }} is started and autostart at boot
+- name: Ensure service {{ composant.cluster_name }} is started at boot
   service:
     name: "vitam-{{ composant.cluster_name }}"
+    enabled: "{{ composant.at_boot | default(service_at_boot) }}"
     state: started
-    enabled: yes
-  notify:
-    - restart elasticsearch
 
-- meta: flush_handlers
+- name: wait until port is open
+  wait_for:
+    host: "{{ ip_service }}"
+    port: "{{ composant.port_http }}"
+    state: started
+  when: composant.groupe == "data"
 
-- import_tasks: post_migration.yml
-  when: is_installed.stdout.find('5.6.') != -1
+- name: wait until port is open
+  wait_for:
+    host: "{{ ip_admin }}"
+    port: "{{ composant.port_http }}"
+    state: started
+  when: composant.groupe == "log"
+
+- name: Check elasticsearch-cluster service health in local consul agent
+  uri:
+    url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname][consul.network], '127.0.0.1') }}:8500/v1/agent/health/service/name/{{ composant.cluster_name }}"
+  register: result
+  until:
+    - result.status is defined
+    - result.status == 200
+  retries: "{{ vitam_defaults.services.status_retries_number }}"
+  delay: "{{ vitam_defaults.services.status_retries_delay }}"
