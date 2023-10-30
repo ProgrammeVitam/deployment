@@ -1786,7 +1786,8 @@
     "Origin": "INTERNAL",
     "ShortName": "_aud",
     "Collections": [
-      "Unit", "ObjectGroup"
+      "Unit",
+      "ObjectGroup"
     ]
   },
   {
@@ -1797,7 +1798,8 @@
     "Origin": "INTERNAL",
     "ShortName": "_acd",
     "Collections": [
-      "Unit", "ObjectGroup"
+      "Unit",
+      "ObjectGroup"
     ]
   },
   {
@@ -3264,6 +3266,78 @@
     ]
   },
   {
+    "Identifier": "DataObjectUse",
+    "ApiField": "DataObjectUse",
+    "SedaField": "DataObjectUse",
+    "Description": "Data Object Use",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "DataObjectUse",
+    "Collections": [
+      "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "DataObjectNumber",
+    "ApiField": "DataObjectNumber",
+    "SedaField": "DataObjectNumber",
+    "Description": "Data Object Number",
+    "Type": "LONG",
+    "Origin": "INTERNAL",
+    "ShortName": "DataObjectNumber",
+    "Collections": [
+      "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierType",
+    "SedaField": "PersistentIdentifierType",
+    "Description": "Persistent Identifier Type",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierType",
+    "Collections": [
+      "Unit",
+      "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierOrigin",
+    "SedaField": "PersistentIdentifierOrigin",
+    "Description": "Persistent Identifier Origin",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierOrigin",
+    "Collections": [
+      "Unit",
+      "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierReference",
+    "SedaField": "PersistentIdentifierReference",
+    "Description": "Persistent Identifier Reference",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierReference",
+    "Collections": [
+      "Unit",
+      "ObjectGroup"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierContent",
+    "SedaField": "PersistentIdentifierContent",
+    "Description": "Persistent Identifier Content",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierContent",
+    "Collections": [
+      "Unit",
+      "ObjectGroup"
+    ]
+  },
+  {
     "Identifier": "UnitStrategy",
     "ApiField": "UnitStrategy",
     "Description": "Mapping : managementcontract-es-mapping.json. Stratégie de stockage pour les métadonnées de type unité archivistique",
@@ -3327,6 +3401,155 @@
     "ShortName": "UsageName",
     "Collections": [
       "ManagementContract"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierPolicyType",
+    "ApiField": "PersistentIdentifierPolicyType",
+    "Description": "Mapping : managementcontract-es-mapping.json. Gestion d'une autorité nommante ARK",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierPolicyType",
+    "Collections": [
+      "ManagementContract"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierUnit",
+    "ApiField": "PersistentIdentifierUnit",
+    "Description": "Mapping : managementcontract-es-mapping.json. Gestion d'une autorité nommante ARK",
+    "Type": "BOOLEAN",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierUnit",
+    "Collections": [
+      "ManagementContract"
+    ]
+  },
+  {
+    "Identifier": "PersistentIdentifierAuthority",
+    "ApiField": "PersistentIdentifierAuthority",
+    "Description": "Mapping : managementcontract-es-mapping.json. Gestion d'une autorité nommante ARK",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "PersistentIdentifierAuthority",
+    "Collections": [
+      "ManagementContract"
+    ]
+  },
+  {
+    "Identifier": "SigningRole",
+    "ApiField": "SigningRole",
+    "SedaField": "SigningRole",
+    "Description": "Mapping : unit-es-mapping.json. Rôle de l'unité d'archives dans un contexte de signature. Quatre rôles (étiquettes) ont été identifiés : document signé, signature, horodatage et preuves complémentaires.",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "SigningRole",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "DetachedSigningRole",
+    "ApiField": "DetachedSigningRole",
+    "SedaField": "DetachedSigningRole",
+    "Description": "Mapping : unit-es-mapping.json. Référence aux rôles des unités d'archives encapsulées sous la racine contenant le document signé.",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "DetachedSigningRole",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "SigningType",
+    "ApiField": "SigningType",
+    "SedaField": "SigningType",
+    "Description": "Mapping : unit-es-mapping.json. Type de signature, au sens juridique du terme. Par exemple, simple, avancée, qualifiée.",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "SigningType",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "TimeStamp",
+    "ApiField": "TimeStamp",
+    "SedaField": "TimeStamp",
+    "Description": "Mapping : unit-es-mapping.json. Horodatage de la signature",
+    "Type": "DATE",
+    "Origin": "INTERNAL",
+    "ShortName": "TimeStamp",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "AdditionalTimestampingInformation",
+    "ApiField": "AdditionalTimestampingInformation",
+    "SedaField": "AdditionalTimestampingInformation",
+    "Description": "Mapping : unit-es-mapping.json. Informations complémentaires sur l'horodatage d'une signature",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "AdditionalTimestampingInformation",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "AdditionalProofInformation",
+    "ApiField": "AdditionalProofInformation",
+    "SedaField": "AdditionalProofInformation",
+    "Description": "Mapping : unit-es-mapping.json. Informations relatives aux preuves complémentaires archivées dans un contexte de signature.",
+    "Type": "TEXT",
+    "Origin": "INTERNAL",
+    "ShortName": "AdditionalProofInformation",
+    "Collections": [
+      "Unit"
+    ]
+  },
+  {
+    "Identifier": "SignedDocument",
+    "ApiField": "SignedDocument",
+    "Description": "Accepte tout type de données signée ou non",
+    "Type": "KEYWORD",
+    "Origin": "INTERNAL",
+    "ShortName": "Accepte tout type de données signée ou non",
+    "Collections": [
+      "IngestContract"
+    ]
+  },
+  {
+    "Identifier": "DeclaredSignature",
+    "ApiField": "DeclaredSignature",
+    "Description": "Données toujours accompagné d'une signature",
+    "Type": "BOOLEAN",
+    "Origin": "INTERNAL",
+    "ShortName": "Données toujours accompagné d'une signature",
+    "Collections": [
+      "IngestContract"
+    ]
+  },
+  {
+    "Identifier": "DeclaredTimestamp",
+    "ApiField": "DeclaredTimestamp",
+    "Description": "Données toujours accompagné d'un timestamp",
+    "Type": "BOOLEAN",
+    "Origin": "INTERNAL",
+    "ShortName": "Données toujours accompagné d'un timestamp",
+    "Collections": [
+      "IngestContract"
+    ]
+  },
+  {
+    "Identifier": "DeclaredAdditionalProof",
+    "ApiField": "DeclaredAdditionalProof",
+    "Description": "Données toujours accompagné de preuves complémentaire",
+    "Type": "BOOLEAN",
+    "Origin": "INTERNAL",
+    "ShortName": "Données toujours accompagné de preuves complémentaire",
+    "Collections": [
+      "IngestContract"
     ]
   }
 ]

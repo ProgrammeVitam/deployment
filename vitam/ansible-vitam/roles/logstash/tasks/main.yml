@@ -5,45 +5,10 @@
   fail: msg="Too much replica defined for logstash index in elasticsearch-log"
   when: groups['hosts_elasticsearch_log']|length <= kibana.log.metrics.replica and groups['hosts_elasticsearch_log']|length>1
 
-- name: Install java (prerequisite for other components) when RedHat
-  yum:
-    name: "{{ java_prerequisites.redhat }}"
-    state: latest
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when: ansible_os_family == "RedHat"
-
-- name: "install openjdk from {{ ansible_distribution_release }}-backports only when Debian"
-  apt:
-    name: "{{ java_prerequisites.debian }}"
-    state: latest
-    default_release: "{{ ansible_distribution_release }}-backports"
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when:
-    - ansible_os_family == "Debian"
-    - disable_internet_repositories_install == false
-
-- name: "install openjdk only when Debian"
-  apt:
-    name: "{{ java_prerequisites.debian }}"
-    state: latest
-  register: result
-  retries: "{{ packages_install_retries_number }}"
-  until: result is succeeded
-  delay: "{{ packages_install_retries_delay }}"
-  when:
-    - ansible_os_family == "Debian"
-    - disable_internet_repositories_install == true
-
-- name: Install logstash package from repo
+- name: "Install {{ logstash_package }} package"
   package:
-    name: vitam-logstash
-    state: latest
+    name: "{{ logstash_package }}"
+    state: present
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
@@ -127,30 +92,6 @@
   notify:
     - "logstash - restart service"
 
-- block:
-  # related to https://github.com/elastic/logstash/issues/11107
-  # info here : https://stackoverflow.com/questions/6784463/error-trustanchors-parameter-must-be-non-empty
-  - name: change default keystore type in java.security
-    lineinfile:
-      path: /etc/java-11-openjdk/security/java.security
-      regexp: '^keystore.type=pkcs12'
-      line: "keystore.type=jks"
-
-  - name: remove cacerts only on debian
-    file:
-      path: /etc/ssl/certs/java/cacerts
-      state: absent
-    notify:
-      - "logstash - restart service"
-
-  - name: recreate cacerts only on Debian
-    shell: "update-ca-certificates -f"
-    notify:
-      - "logstash - restart service"
-
-  when:
-    - ansible_os_family == "Debian"
-
 #### Consul configuration ####
 
 - name: Ensure consul config dir is OK
@@ -185,7 +126,7 @@
 
 - name: Check logstash service health in local consul agent
   uri:
-    url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname][consul.network], '127.0.0.1') }}:8500/v1/agent/health/service/name/logstash"
+    url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname]['ip_admin'], '127.0.0.1') }}:8500/v1/agent/health/service/name/logstash"
   register: result
   until:
     - result.status is defined

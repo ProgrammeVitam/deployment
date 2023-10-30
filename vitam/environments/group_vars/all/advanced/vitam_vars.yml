@@ -127,6 +127,8 @@ vitam_timers:
     frequency_accession_register_reconstruction: "0 0/5 * * * ?"
     frequency_rule_management_audit: "0 40 * * * ?"
     frequency_reconstruction: "0 0/5 * * * ?"
+    frequency_integrity_audit: "0 0 0 1 JAN ? 2020"
+    frequency_existence_audit: "0 0 0 1 JAN ? 2020"
   metadata:
     frequency_store_graph: "0 10/30 * * * ?"
     frequency_reconstruction: "0 0/5 * * * ?"
@@ -137,6 +139,14 @@ vitam_timers:
   offer:
     # Compaction offer logs
     frequency_offerlog_compaction: "0 40 * * * ?"
+
+scheduler:
+  job_parameters:
+    integrity_audit:
+      operations_delay_in_minutes: 1440
+    existence_audit:
+      operations_delay_in_minutes: 1440
+
 
 ### consul ###
 # WARNING: consul_domain should be a supported domain name for your organization
@@ -352,7 +362,9 @@ vitam:
     criticalDipTimeToLiveInMinutes: 1440 # 1 day
     transfersSIPTimeToLiveInMinutes: 10080 # 7 days
     unitsStreamThreshold: 1000000 # 1 million
-    streamExecutionLimit: 3 # 3 times
+    unitsStreamExecutionLimit: 3 # 3 times
+    objectsStreamThreshold: 1000000 # 1 million
+    objectsStreamExecutionLimit: 3 # 3 times
     workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
     elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata/mapping" # Directory of elasticsearch metadata mapping
     #### Audit data consistency MongoDB-ES ####
@@ -484,6 +496,7 @@ vitam:
     baseuri: "collect-external"
     https_enabled: true
     secret_platform: "false"
+    authorizeTrackTotalHits: false # if false, limit results to 10K. if true, authorize results overs 10K (can overload elasticsearch-data)
   metadata_collect:
     vitam_component: metadata-collect
     host: "metadata-collect.service.{{ consul_domain }}"

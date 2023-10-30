@@ -5,7 +5,7 @@
     name:
       - mongodb-org-shell
       - mongodb-mongosh
-      - mongodb-org-tools
+      - mongodb-database-tools
     state: present
   register: result
   retries: "{{ packages_install_retries_number }}"
