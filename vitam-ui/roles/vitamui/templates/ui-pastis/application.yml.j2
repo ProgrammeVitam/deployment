@@ -2,7 +2,7 @@ spring:
   cloud:
     consul:
       enabled: true
-      host: consul.service.{{ consul_domain }}
+      host: {{ hostvars[inventory_hostname][consul.network] if (inventory_hostname in groups['hosts_vitamui_consul_server'] or inventory_hostname in groups['hosts_consul_server']) else 'localhost' }}
       discovery:
         preferIpAddress: true
         tags: {{ consul_tags }}
@@ -164,6 +164,18 @@ cas:
 
 {% endif %}
 
+list-enable-external-identifiers:
+  tenants:
+{% if vitam_vars.functional_administration.vitam_tenants_usage_external is iterable %}
+{% for tenant in vitam_vars.functional_administration.vitam_tenants_usage_external %}
+{% if tenant.identifiers is defined %}
+    {{ tenant.name }}:
+{% for external in tenant.identifiers %}
+      - {{ external }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
 
 opentracing:
   jaeger:

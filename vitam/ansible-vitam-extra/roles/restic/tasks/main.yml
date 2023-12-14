@@ -1,21 +1,13 @@
 ---
 
-- name: Install restic & mandatory packages on RedHat
+- name: Install restic & mandatory packages
   package:
     name:
       - restic
-      - mongodb-org-tools
-      - bind-utils
+      - mongodb-database-tools
+      - "{{ 'dnsutils' if ansible_os_family == 'Debian' else 'bind-utils' }}"
     state: latest
   when: ansible_os_family == "RedHat"
-
-- name: Install restic & mandatory packages on Debian
-  package:
-    name:
-      - restic
-      - mongodb-org-tools
-      - dnsutils
-  when: ansible_os_family == "Debian"
 
 - name: Check that the restic directories exist
   file:
@@ -78,4 +70,4 @@
     day: "{{ restic.cron.day | default('*') }}"
     month: "{{ restic.cron.month | default('*') }}"
     weekday: "{{ restic.cron.weekday | default('*') }}"
-    job: /vitam/script/restic/restic_backup
+    job: "/vitam/script/restic/restic_backup > /dev/null"
