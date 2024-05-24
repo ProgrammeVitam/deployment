@@ -1,0 +1,66 @@
+---
+
+filebeat_processors:
+  processors:
+    - add_host_metadata:
+        when.not.contains.tags: forwarded
+    - add_cloud_metadata: ~
+    - add_docker_metadata: ~
+
+filebeat_log:
+  level: WARNING
+  directory: /vitam/log/filebeat
+  filename: filebeat.log
+  keepfiles: 30
+
+cots_list:
+  - cerebro
+  - grafana
+  - prometheus
+  - alertmanager
+
+filebeat:
+  system:
+    enable_log: false
+    enable_auth: false
+  cots:
+    consul:
+      enable_log: true
+    antivirus:
+      enable_scan: true
+      enable_log: true
+    kibana_data:
+      enable_log: true
+      enable_audit: true
+    kibana_log:
+      enable_log: true
+      enable_audit: true
+    logstash:
+      enable_log: true
+    elasticsearch_data:
+      enable_server: true
+      enable_audit: true
+      enable_slowlog: true
+      enable_deprecation: false
+    elasticsearch_log:
+      enable_server: true
+      enable_audit: true
+      enable_slowlog: true
+      enable_deprecation: false
+    apache:
+      enable_access: true
+      enable_log: true
+    mongodb_offer:
+      mongos:
+        enable_log: true
+      mongoc:
+        enable_log: true
+      mongod:
+        enable_log: true
+    mongodb_data:
+      mongos:
+        enable_log: true
+      mongoc:
+        enable_log: true
+      mongod:
+        enable_log: true

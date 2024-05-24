@@ -1,0 +1,18 @@
+---
+
+- name: "Assets > Tasks > main.yml | Create directory if it doesn't exist"
+  file:
+    path: "{{ assets_path }}"
+    state: directory
+    mode: "{{ vitamui_defaults.folder.folder_permission }}"
+    owner: "{{ assets_user }}"
+    group: "{{ assets_group }}"
+
+- name: "Assets > Tasks > main.yml | Copy assets"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ assets_path }}/{{ item | basename }}"
+    owner: "{{ assets_user }}"
+    group: "{{ assets_group }}"
+    mode: "{{ vitam_defaults.folder.conf_permission }}"
+  with_fileglob: "{{ assets_default_files }}"

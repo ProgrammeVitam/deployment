@@ -1,0 +1,48 @@
+#jinja2: lstrip_blocks: True
+# Module: mongodb
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-mongodb.html
+
+- module: mongodb
+  log:
+    enabled: {{ filebeat.cots.mongodb.enable_log | bool | lower }}
+    var.paths:
+      - "{{ vitamui_defaults.folder.root_path }}/log/mongod/mongo*.log"
+    input:
+      fields_under_root: true
+      fields:
+        kind: log
+        vitam_component: mongod_vitamui
+        source: vitamui
+        type: cots
+      processors:
+        - decode_json_fields:
+            fields: ["message"]
+            overwrite_keys: true
+            add_error_key: true
+        - script:
+            lang: javascript
+            id: set_log_level
+            source: >
+              function process(event) {
+                event.Put("log_message", event.Get("message.msg"));
+                switch (event.Get("message.s")) {
+                    case "I":
+                        event.Put("log_level", "INFO");
+                        break;
+                    case "W":
+                        event.Put("log_level", "WARN");
+                        break;
+                    case "E":
+                        event.Put("log_level", "ERROR");
+                        break;
+                    case "F":
+                        event.Put("log_level", "FATAL");
+                        break;
+                    default:
+                        event.Put("log_level", "UNKNOWN");
+                  }
+                }
+        - drop_event:
+            when:
+              equals:
+                log_level: "INFO"

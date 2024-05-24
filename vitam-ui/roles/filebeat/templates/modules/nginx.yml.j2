@@ -1,0 +1,54 @@
+# Module: nginx
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-nginx.html
+
+- module: nginx
+  # Access logs
+  access:
+    enabled: {{ filebeat.cots.nginx.enable_access | bool | lower }}
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+    input:
+      fields_under_root: true
+      fields:
+        kind: access
+        vitam_component: nginx
+        source: vitamui
+        type: cots
+      processors:
+        - dissect:
+            tokenizer: '%{client_ip|ip} - %{sender} [%{date_time}] "%{http_method} %{request_path} HTTP/%{http_version}" %{http_status_code|integer} %{response_size} %{log_message}'
+            target_prefix: ""
+        - drop_fields:
+            fields: ["date_time"]
+
+  # Error logs
+  error:
+    enabled: {{ filebeat.cots.nginx.enable_error | bool | lower }}
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+    input:
+      fields_under_root: true
+      fields:
+        kind: error
+        vitam_component: nginx
+        source: vitamui
+        type: cots
+
+  # Ingress-nginx controller logs. This is disabled by default. It could be used in Kubernetes environments to parse ingress-nginx logs
+  ingress_controller:
+    enabled: {{ filebeat.cots.nginx.enable_ingress | bool | lower }}
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+    input:
+      fields_under_root: true
+      fields:
+        kind: ingress
+        vitam_component: nginx
+        source: vitamui
+        type: cots

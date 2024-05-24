@@ -25,31 +25,20 @@ elasticsearch:
         indices_fielddata_cache_size: '30%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/7.6/modules-fielddata.html
         indices_breaker_fielddata_limit: '40%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/7.6/circuit-breaker.html#fielddata-circuit-breaker
         dynamic_timeout: 30s
-        # default index template
-        index_templates:
-            packetbeat:
-                shards: 5
+        # log configuration
         log_appenders:
             root:
                 log_level: "info"
             rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "5GB"
-                max_files: "50"
+                max_log_file_size: "10MB"
+                max_total_log_size: "2GB"
             deprecation_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "1GB"
-                max_files: "10"
+                max_log_file_size: "10MB"
+                max_files: "20"
                 log_level: "warn"
             index_search_slowlog_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "1GB"
-                max_files: "10"
                 log_level: "warn"
             index_indexing_slowlog_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "1GB"
-                max_files: "10"
                 log_level: "warn"
         # By default, is commented. Should be uncommented if ansible computes badly vCPUs number ;  values are associated vCPUs numbers ; please adapt to your configuration
         # thread_pool:
@@ -78,29 +67,20 @@ elasticsearch:
         indices_fielddata_cache_size: '30%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/6.5/modules-fielddata.html
         indices_breaker_fielddata_limit: '40%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/6.5/circuit-breaker.html#fielddata-circuit-breaker
         dynamic_timeout: 30s
-        # default index template
-        index_templates:
+        # log configuration
         log_appenders:
             root:
                 log_level: "info"
             rolling:
-                max_log_file_size: "100MB"
+                max_log_file_size: "10MB"
                 max_total_log_size: "5GB"
-                max_files: "50"
             deprecation_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "5GB"
-                max_files: "50"
+                max_log_file_size: "10MB"
+                max_files: "20"
                 log_level: "warn"
             index_search_slowlog_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "5GB"
-                max_files: "50"
                 log_level: "warn"
             index_indexing_slowlog_rolling:
-                max_log_file_size: "100MB"
-                max_total_log_size: "5GB"
-                max_files: "50"
                 log_level: "warn"
         # By default, is commented. Should be uncommented if ansible computes badly vCPUs number ;  values are associated vCPUs numbers ; please adapt to your configuration
         # thread_pool:
@@ -120,7 +100,6 @@ mongodb:
     mongoc_port: 27018
     mongod_port: 27019
     mongo_authentication: "true"
-    host: "mongos.service.{{ consul_domain }}"
     check_consul: 10 # in seconds
     drop_info_log: false # Drop mongo (I)nformational log, for Verbosity Level of 0
     # logs configuration
@@ -129,21 +108,20 @@ mongodb:
 
 logstash:
     host: "logstash.service.{{ consul_domain }}"
-    user: logstash
     port: 10514
     rest_port: 20514
     check_consul: 10 # in seconds
-    # logstash xms & xmx in Megabytes
-    # jvm_xms: 2048
-    # jvm_xmx: 2048
-    # workers_number: 4
+    ## logstash xms & xmx in Megabytes
+    # jvm_xms: 256 # default to memory_size/8
+    # jvm_xmx: 1024 # default to memory_size/4
+    # workers_number: 4 # default to cores*threads
     log_appenders:
         rolling:
-            max_log_file_size: "100MB"
-            max_total_log_size: "5GB"
+            max_log_file_size: "10MB"
+            max_total_log_size: "2GB"
         json_rolling:
-            max_log_file_size: "100MB"
-            max_total_log_size: "5GB"
+            max_log_file_size: "10MB"
+            max_total_log_size: "2GB"
 
 # Prometheus params
 prometheus:
@@ -152,7 +130,7 @@ prometheus:
     prometheus_config_file_target_directory: # Set path where "prometheus.yml" file will be generated. Example: /tmp/
     server:
         port: 9090
-        tsdb_retention_time: "7d"
+        tsdb_retention_time: "15d"
         tsdb_retention_size: "5GB"
     node_exporter:
         enabled: true
@@ -181,6 +159,17 @@ prometheus:
         #  - api_url: "https://hooks.slack.com/services/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         #    channel: '#your_alert_channel'
         #    send_resolved: true
+    blackbox_exporter:
+        enabled: true
+        port: 9115
+        targets:
+            ## List all the targeted URLs that must be controled with blackbox
+            - "{{ vitam_reverse_external_protocol | default('https') }}://{{ vitam_reverse_external_dns }}:{{ reverse_proxy_port | default(443) }},reverse"
+
+    mongodb_exporter:
+        enabled: true
+        port_mongoc: 9216
+        port_mongod: 9217
 
 grafana:
     check_consul: 10 # in seconds
@@ -219,7 +208,7 @@ grafana:
 
 # Curator units: days
 curator:
-    log:
+    indices:
         metricbeat:
             close: 5
             delete: 10
@@ -265,8 +254,11 @@ kibana:
         replica: 1
 
 syslog:
-    # value can be syslog-ng or rsyslog
-    name: "rsyslog"
+    # value can be syslog-ng, rsyslog or filebeat (default)
+    name: "filebeat"
+
+# filebeat:
+# Default values are under ansible-vitam/roles/filebeat/defaults/main.yml
 
 cerebro:
     baseuri: "cerebro"
@@ -343,19 +335,19 @@ restic:
         # mongo-offer
         - name: "{{ offer_conf }}"
           type: mongodb
-          host: "{{ offer_conf }}-mongos.service.consul:{{ mongodb.mongos_port }}"
+          host: "{{ offer_conf }}-mongos.service.{{ consul_domain }}:{{ mongodb.mongos_port }}"
           user: "{{ mongodb[offer_conf].admin.user }}"
           password: "{{ mongodb[offer_conf].admin.password }}"
         # # mongo-data (only if mono-sharded cluster)
         # - name: mongo-data
         #   type: mongodb
-        #   host: "mongo-data-mongos.service.consul:{{ mongodb.mongos_port }}"
+        #   host: "mongo-data-mongos.service.{{ consul_domain }}:{{ mongodb.mongos_port }}"
         #   user: "{{ mongodb['mongo-data'].admin.user }}"
         #   password: "{{ mongodb['mongo-data'].admin.password }}"
         # # mongo-vitamui (only if vitamui is deployed)
         # - name: mongo-vitamui
         #   type: mongodb
-        #   host: mongo-vitamui-mongod.service.consul:{{ mongodb.mongod_port }}
+        #   host: mongo-vitamui-mongod.service.{{ consul_domain }}:{{ mongodb.mongod_port }}
         #   # Add the following params on environments/group_vars/all/main/vault-vitam.yml
         #   # They can be found under vitamui's deployment sources on environments/group_vars/all/vault-mongodb.yml
         #   user: "{{ mongodb['mongo-vitamui'].admin.user }}"

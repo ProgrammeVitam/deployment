@@ -1,0 +1,27 @@
+# Module: system
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-system.html
+
+- module: system
+  # Syslog
+  syslog:
+    enabled: {{ filebeat.system.enable_log | bool | lower }}
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+    input:
+      fields_under_root: true
+      fields:
+        kind: syslog
+        source: vitam
+
+  # Authorization logs
+  auth:
+    enabled: {{ filebeat.system.enable_auth | bool | lower }}
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths:
+    input:
+      fields_under_root: true
+      fields:
+        kind: auth
+        source: vitam

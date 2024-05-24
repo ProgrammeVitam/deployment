@@ -1,0 +1,313 @@
+server:
+  address: {{ ip_service }}
+  port: {{ vitamui_struct.server_port | default('8090') }}
+{% if vitamui_struct.secure | default(secure) | bool == true %}
+  ssl:
+    key-store: {{ vitamui_folder_conf }}/keystore_{{ vitamui_struct.service_name | default(service_name) }}.jks
+    key-store-password: {{ password_keystore }}
+    key-password: {{ password_keystore }}
+    trust-store: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
+    trust-store-password: {{ password_truststore }}
+    client-auth: need
+{% endif %}
+  max-http-header-size: {{ vitamui_struct.server_max_http_header_size | default('10KB') }}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    address: {{ ip_admin }}
+    port: {{ vitamui_struct.port_admin | default('7090') }}
+    ssl:
+      enabled: false
+
+authn:
+  client-certificate-header-name: x-ssl-cert
+
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    config:
+      enabled: false
+    consul:
+      enabled: true
+      host: {{ hostvars[inventory_hostname][consul.network] if (inventory_hostname in groups['hosts_vitamui_consul_server'] or inventory_hostname in groups['hosts_consul_server']) else 'localhost' }}
+      discovery:
+        serviceName: gateway-server
+        preferIpAddress: true
+        tags: {{ consul_tags }}
+        instanceId: {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
+    gateway:
+      httpclient:
+        wiretap: false
+        ssl:
+          use-insecure-trust-manager: true
+      httpserver:
+        wiretap: false
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+            - "{{ url_prefix }}"
+            - "http://localhost"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: iam-external-service
+          uri: {{ 'https' if vitamui.iam_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.iam_external.host }}:{{ vitamui.iam_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /portal-api/security,
+              /portal-api/userinfos/me,
+              /portal-api/ui/applications/**,
+              /portal-api/users/analytics,
+              /portal-api/subrogations/**,
+
+              /identity-api/security,
+              /identity-api/userinfos/**,
+              /identity-api/ui/applications/**,
+              /identity-api/subrogations/**,
+              /identity-api/customers/**,
+              /identity-api/tenants/**,
+              /identity-api/owners/**,
+              /identity-api/providers/**,
+              /identity-api/groups/**,
+              /identity-api/users/**,
+              /identity-api/profiles/**,
+              /identity-api/accesscontracts/**,
+              /identity-api/externalparamprofile/**,
+
+              /referential-api/security$,
+              /referential-api/security/**,
+              /referential-api/userinfos/**,
+              /referential-api/ui/applications/**,
+              /referential-api/users/analytics,
+              /referential-api/subrogations/**,
+              /referential-api/logbooks/operations/**,
+              /referential-api/tenants/**,
+              /referential-api/accesscontracts/**,
+              /referential-api/profiles/**,
+              /referential-api/externalparameters/**,
+
+              /archive-search-api/ui/applications/**,
+              /archive-search-api/externalparameters/**,
+              /archive-search-api/security,
+              /archive-search-api/tenants/**,
+              /archive-search-api/userinfos/**,
+              /archive-search-api/subrogations/**,
+              /archive-search-api/users/analytics,
+              /archive-search-api/logbooks/operations/**,
+              /archive-search-api/accesscontracts/**,
+
+              /pastis-api/ui/**,
+              /pastis-api/security,
+              /pastis-api/userinfos/**,
+              /pastis-api/subrogations/**,
+              /pastis-api/users/analytics,
+              /pastis-api/logbooks/operations/**,
+              /pastis-api/accesscontracts/**,
+
+              /collect-api/ui/applications/**,
+              /collect-api/externalparameters/**,
+              /collect-api/security,
+              /collect-api/tenants/**,
+              /collect-api/userinfos/**,
+              /collect-api/subrogations/**,
+              /collect-api/users/analytics,
+              /collect-api/logbooks/operations/**,
+              /collect-api/accesscontracts/**,
+
+              /ingest-api/ui/applications/**,
+              /ingest-api/externalparameters/**,
+              /ingest-api/security,
+              /ingest-api/tenants/**,
+              /ingest-api/userinfos/**,
+              /ingest-api/subrogations/**,
+              /ingest-api/users/analytics,
+              /ingest-api/logbooks/operations/**,
+              /ingest-api/accesscontracts/**
+
+          filters:
+            # Portal IAM API
+            - RewritePath=/portal-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/portal-api/(?<segment>.*),/iam/v1/$\{segment}
+
+            # Identity IAM API
+            - RewritePath=/identity-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/identity-api/logbooks(?<segment>.*),/v1/logbooks$\{segment},
+            - RewritePath=/identity-api/accesscontracts(?<segment>.*),/v1/accesscontracts$\{segment},
+            - RewritePath=/identity-api/(?<segment>.*),/iam/v1/$\{segment}
+
+            # Referential IAM API
+            - RewritePath=/referential-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/referential-api/externalparameters(?<segment>.*),/iam/v1/externalparameters/me$\{segment},
+            - RewritePath=/referential-api/logbooks/operations(?<segment>.*),/v1/logbooks/operations$\{segment},
+            - RewritePath=/ingest-api/subrogations/(?<segment>.*),/iam/v1/subrogations/$\{segment},
+            - RewritePath=/referential-api/(?<segment>.*),/iam/v1/$\{segment}
+
+            # Archive Search IAM API
+            - RewritePath=/archive-search-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/archive-search-api/externalparameters(?<segment>.*),/iam/v1/externalparameters/me$\{segment},
+            - RewritePath=/archive-search-api/accesscontracts(?<segment>.*),/v1/accesscontracts$\{segment},
+            - RewritePath=/archive-search-api/security(?<segment>.*),/iam/v1/security$\{segment},
+            - RewritePath=/archive-search-api/userinfos(?<segment>.*),/iam/v1/userinfos$\{segment},
+            - RewritePath=/archive-search-api/users(?<segment>.*),/iam/v1/users$\{segment},
+            - RewritePath=/ingest-api/subrogations/(?<segment>.*),/iam/v1/subrogations/$\{segment},
+            - RewritePath=/archive-search-api/(?<segment>.*),/v1/$\{segment}
+
+            # Pastis IAM API
+            - RewritePath=/pastis-api/security(?<segment>.*),/iam/v1/security$\{segment},
+            - RewritePath=/pastis-api/userinfos(?<segment>.*),/iam/v1/userinfos$\{segment},
+            - RewritePath=/pastis-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/pastis-api/users(?<segment>.*),/iam/v1/users$\{segment},
+            - RewritePath=/ingest-api/subrogations/(?<segment>.*),/iam/v1/subrogations/$\{segment},
+            - RewritePath=/pastis-api/(?<segment>.*),/v1/$\{segment}
+
+            # Collect IAM API
+            - RewritePath=/collect-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/collect-api/externalparameters(?<segment>.*),/iam/v1/externalparameters/me$\{segment},
+            - RewritePath=/collect-api/security(?<segment>.*),/iam/v1/security$\{segment},
+            - RewritePath=/collect-api/userinfos(?<segment>.*),/iam/v1/userinfos$\{segment},
+            - RewritePath=/collect-api/users(?<segment>.*),/iam/v1/users$\{segment},
+            - RewritePath=/ingest-api/subrogations/(?<segment>.*),/iam/v1/subrogations/$\{segment},
+            - RewritePath=/collect-api/(?<segment>.*),/v1/$\{segment}
+
+
+            # Ingest IAM API
+            - RewritePath=/ingest-api/ui/(?<segment>.*),/iam/v1/$\{segment}
+            - RewritePath=/ingest-api/externalparameters(?<segment>.*),/iam/v1/externalparameters/me$\{segment},
+            - RewritePath=/ingest-api/logbooks/operations(?<segment>.*),/v1/logbooks/operations$\{segment},
+            - RewritePath=/ingest-api/security(?<segment>.*),/iam/v1/security$\{segment},
+            - RewritePath=/ingest-api/userinfos(?<segment>.*),/iam/v1/userinfos$\{segment},
+            - RewritePath=/ingest-api/users(?<segment>.*),/iam/v1/users$\{segment},
+            - RewritePath=/ingest-api/subrogations/(?<segment>.*),/iam/v1/subrogations/$\{segment},
+            - RewritePath=/ingest-api/(?<segment>.*),/v1/$\{segment}
+
+        - id: referential-external-service
+          uri: {{ 'https' if vitamui.referential_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.referential_external.host }}:{{ vitamui.referential_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /referential-api/accesscontract/**,
+              /referential-api/ingestcontract/**,
+              /referential-api/management-contract/**,
+              /referential-api/agency/**,
+              /referential-api/fileformat/**,
+              /referential-api/operation/**,
+              /referential-api/logbook-management-operation/**,
+              /referential-api/accession-register/**,
+              /referential-api/archival-profile/**,
+              /referential-api/security-profile/**,
+              /referential-api/context/**,
+              /referential-api/ontology/**,
+              /referential-api/profile/**,
+              /referential-api/search/**,
+              /referential-api/static/**,
+              /referential-api/rules/**,
+              /referential-api/rule/**,
+
+              /archive-search-api/security-profile/**,
+              /archive-search-api/ontology/**,
+              /archive-search-api/rules/**,
+              /archive-search-api/schemas,
+
+              /pastis-api/archival-profile$,
+              /pastis-api/archival-profile/**,
+              /pastis-api/profile$,
+              /pastis-api/profile/**,
+
+              /collect-api/ontology/**,
+              /collect-api/search/**,
+              /collect-api/rules/**,
+              /collect-api/schemas
+
+          filters:
+            - RewritePath=/referential-api/fileformat(?<segment>.*),/referential/v1/fileformats$\{segment}
+            - RewritePath=/referential-api/operation(?<segment>.*),/referential/v1/operations$\{segment}
+            - RewritePath=/referential-api/search/filingplan(?<segment>.*),/units/filingplan$\{segment}
+            - RewritePath=/referential-api/search/units(?<segment>.*),/units$\{segment}
+            - RewritePath=/referential-api/rule/(?<segment>.*),/referential/v1/rules/$\{segment}
+            - RewritePath=/referential-api/static(?<segment>.*),$\{segment}
+            - RewritePath=/referential-api(?<segment>.*),/referential/v1$\{segment}
+
+            # Archive Search Referential API
+            - RewritePath=/archive-search-api/schemas,/schemas
+            - RewritePath=/archive-search-api(?<segment>.*),/referential/v1$\{segment}
+
+            # Pastis to Referential API
+            - RewritePath=/pastis-api/archival-profile(?<segment>.*),/referential/v1/archival-profile$\{segment}
+            - RewritePath=/pastis-api/profile(?<segment>.*),/referential/v1/profile$\{segment}
+
+            # Collect Referential API
+            - RewritePath=/collect-api/schemas,/schemas
+            - RewritePath=/collect-api/search/units(?<segment>.*),/units$\{segment}
+            - RewritePath=/collect-api/search/filingplan(?<segment>.*),/units/filingplan$\{segment}
+            - RewritePath=/collect-api(?<segment>.*),/referential/v1$\{segment}
+
+        - id: archive-search-external-service
+          uri: {{ 'https' if vitamui.archive_search_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.archive_search_external.host }}:{{ vitamui.archive_search_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /archive-search-api/archive-search/**,
+              /archive-search-api/archive-units/**,
+          filters:
+            # Archive search API
+            - RewritePath=/archive-search-api/archive-search/searchcriteriahistory,/searchcriteriahistory,
+            - RewritePath=/archive-search-api/archive-search/filingholdingscheme,/archives-search/filling-holding-schema,
+            - RewritePath=/archive-search-api/archive-search/(?<segment>.*),/archives-search/$\{segment},
+            - RewritePath=/archive-search-api/archive-units/(?<segment>.*),/archive-units/$\{segment}
+
+        - id: pastis-external-service
+          uri: {{ 'https' if vitamui.pastis_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.pastis_external.host }}:{{ vitamui.pastis_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /pastis-api/pastis/**
+
+          filters:
+            # Pastis API
+            - RewritePath=/pastis-api/,/
+
+        - id: collect-external-service
+          uri: {{ 'https' if vitamui.collect_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.collect_external.host }}:{{ vitamui.collect_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /collect-api/projects$,
+              /collect-api/projects/**,
+              /collect-api/transactions$,
+              /collect-api/transactions/**,
+              /collect-api/archive-units$,
+              /collect-api/archive-units/**
+
+          filters:
+            # Collect API
+            - RewritePath=/collect-api/projects/archive-units/searchcriteriahistory(?<segment>.*),/archive-units/searchcriteriahistory$\{segment},
+            - RewritePath=/collect-api/projects(?<segment>.*),/collect-api/v1/projects$\{segment},
+            - RewritePath=/collect-api/transactions/archive-units/(?<segment>.*)/search,/collect-api/v1/transactions/$\{segment}/archive-units,
+            - RewritePath=/collect-api/transactions/archive-units/(?<segment>.*)/export-csv-search,/collect-api/v1/transactions/$\{segment}/archive-units/export-csv-search,
+            - RewritePath=/collect-api/transactions/archive-units/(?<segment>.*)/update-units-metadata,/collect-api/v1/transactions/$\{segment}/update-units-metadata,
+            - RewritePath=/collect-api/transactions/archive-units(?<segment>.*),/collect-api/v1/transactions$\{segment},
+            - RewritePath=/collect-api/transactions(?<segment>.*),/collect-api/v1/transactions$\{segment},
+
+
+        - id: ingest-external-service
+          uri: {{ 'https' if vitamui.ingest_external.secure | default(secure) | bool else 'http' }}://{{ vitamui.ingest_external.host }}:{{ vitamui.ingest_external.port_service }}
+          predicates:
+            - >
+              Path=
+              /ingest-api/**
+
+          filters:
+            # Ingest API
+            - RewritePath=/ingest-api/,/v1/
+    discovery:
+      enabled: false
+
+logging:
+  config: {{ vitamui_folder_conf }}/logback.xml

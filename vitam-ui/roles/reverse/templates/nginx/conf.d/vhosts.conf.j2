@@ -1,45 +1,50 @@
-include /etc/nginx/conf.d/upstream;
-
+#jinja2: lstrip_blocks: True
 server {
 
   listen {{ ip_service }}:443 ssl;
-  include {{ nginx_ssl_conf }}/ssl.conf;
+  include {{ nginx_ssl_dir }}/ssl.conf;
 
-  server_name {{ vitam_reverse_external_dns }};
+  server_name {{ vitamui_reverse_external_dns }};
 
   location = /favicon.ico {
-    alias {{ root_path }}/assets/favicon.ico;
+    alias {{ assets_path }}/favicon.ico;
   }
 
   # UI IDENTITY_ADMIN
   location /identity-admin {
-    proxy_pass https://IDENTITY_ADMIN/identity-admin;
-    sub_filter '/identity/' 'https://{{ vitam_reverse_external_dns }}/identity-admin/';
+    rewrite /identity-admin/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.identity_admin.secure | default(secure) | bool else 'http' }}://IDENTITY_ADMIN;
+    sub_filter '/identity/' '{{ url_prefix }}/identity-admin/';
     sub_filter_types text/html text/css;
     sub_filter_once off;
     proxy_set_header Accept-Encoding "";
-    include /etc/nginx/conf.d/proxy_params;
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 
   # UI IDENTITY
   location /identity {
-    proxy_pass https://IDENTITY/identity;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /identity/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.identity.secure | default(secure) | bool else 'http' }}://IDENTITY;
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 
 {% if groups['hosts_ui_referential']|length > 0 %}
   # UI REFERENTIAL
   location /referential {
-    proxy_pass https://REFERENTIAL/referential;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /referential/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.referential.secure | default(secure) | bool else 'http' }}://REFERENTIAL;
+
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 {% endif %}
 
 {% if groups['hosts_ui_ingest']|length > 0 %}
   # UI INGEST
   location /ingest {
-    proxy_pass https://INGEST/ingest;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /ingest/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.ingest.secure | default(secure) | bool else 'http' }}://INGEST;
+
+    include {{ nginx_conf_dir }}/proxy_params;
 
     # http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_request_buffering
     # The request body is sent to the proxied server immediately as it is received.
@@ -57,25 +62,30 @@ server {
 {% if groups['hosts_ui_archive_search']|length > 0 %}
   # UI ARCHIVE_SEARCH
   location /archive-search {
-    proxy_pass https://ARCHIVE_SEARCH/archive-search;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /archive-search/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.archive_search.secure | default(secure) | bool else 'http' }}://ARCHIVE_SEARCH;
+
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 {% endif %}
 
 {% if groups['hosts_ui_pastis']|length > 0 %}
   # UI PASTIS
   location /pastis {
-    proxy_pass https://PASTIS/pastis;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /pastis/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.pastis.secure | default(secure) | bool else 'http' }}://PASTIS;
+
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 {% endif %}
-
 
 {% if groups['hosts_ui_collect']|length > 0 %}
   # UI COLLECT
   location /collect {
-    proxy_pass https://COLLECT/collect;
-    include /etc/nginx/conf.d/proxy_params;
+    rewrite /collect/(.*) /$1 break;
+    proxy_pass {{ 'https' if vitamui.collect.secure | default(secure) | bool else 'http' }}://COLLECT;
+
+    include {{ nginx_conf_dir }}/proxy_params;
 
     # http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_request_buffering
     # The request body is sent to the proxied server immediately as it is received.
@@ -95,15 +105,15 @@ server {
     return 302 $scheme://$host/cas/login;
   }
 
-  location ~ ^/cas/(login|logout|extras|webjars|css|favicon|images|js|serviceValidate|oauth2.0|clientredirect) {
-    proxy_pass https://CAS;
-    include /etc/nginx/conf.d/proxy_params;
+  location ~ ^/cas/(login|logout|extras|webjars|css|icons|favicon|images|js|serviceValidate|oauth2.0|clientredirect|oidc) {
+    proxy_pass {{ 'https' if vitamui.cas_server.secure | default(secure) | bool else 'http' }}://CAS;
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 
   # PORTAL
   location / {
-    proxy_pass https://PORTAL;
-    include /etc/nginx/conf.d/proxy_params;
+    proxy_pass {{ 'https' if vitamui.portal.secure | default(secure) | bool else 'http' }}://PORTAL;
+    include {{ nginx_conf_dir }}/proxy_params;
   }
 
 }

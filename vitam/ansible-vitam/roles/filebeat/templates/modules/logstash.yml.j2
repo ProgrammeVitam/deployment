@@ -1,0 +1,25 @@
+# Module: logstash
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-logstash.html
+
+- module: logstash
+  log:
+    enabled: {{ filebeat.cots.logstash.enable_log | bool | lower }}
+    var.paths:
+      - "{{ vitam_defaults.folder.root_path }}/log/logstash/logstash-plain.log"
+    input:
+      fields_under_root: true
+      fields:
+        kind: log
+        vitam_component: logstash
+        source: vitam
+        type: cots
+      processors:
+        - dissect:
+            tokenizer: '[%{date_time}][%{log_level}]%{*}[%{logger}] %{log_message}'
+            target_prefix: ""
+            trim_values: all
+        - drop_fields:
+            fields: ["date_time"]
+
+  slowlog:
+    enabled: false

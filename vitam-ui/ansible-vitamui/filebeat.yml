@@ -1,0 +1,7 @@
+---
+
+- hosts: hosts_vitamui
+  gather_facts: no
+  roles:
+    - filebeat
+  tags: filebeat

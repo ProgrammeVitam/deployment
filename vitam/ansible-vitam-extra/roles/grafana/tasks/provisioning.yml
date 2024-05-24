@@ -7,7 +7,7 @@
     owner: "{{ grafana_user }}"
     group: "{{ grafana_group }}"
     mode: "{{ vitam_defaults.folder.conf_permission | default (0440) }}"
-  notify: "grafana - restart service"
+  notify: "grafana - restart {{ 'docker' if install_mode == 'container' else 'service' }}"
 
 - name: Copy dashboard json files to provisioning dashboard folder
   copy:
@@ -20,6 +20,11 @@
     - vitam_main_dashboard
     - vitam_elasticsearch_dashboard
     - vitam_standard_dashboard
+    - vitam_monitoring_machine
+    - vitam_global_overview
+    - vitam_blackbox_dashboard
+    - vitam_mongodb_dashboard
+    - vitam_mongodb_global_overview
 
 - name: Set the correct data source name in the dashboard for prometheus
   replace:
@@ -91,4 +96,4 @@
     owner: "{{ grafana_user }}"
     group: "{{ grafana_group }}"
     mode: "{{ vitam_defaults.folder.conf_permission | default (0440) }}"
-  notify: "grafana - restart service"
+  notify: "grafana - restart {{ 'docker' if install_mode == 'container' else 'service' }}"

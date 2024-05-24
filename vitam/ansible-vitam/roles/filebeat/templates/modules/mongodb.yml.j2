@@ -1,0 +1,143 @@
+# Module: mongodb
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-mongodb.html
+
+{% if inventory_hostname in groups['hosts_mongos_offer'] or inventory_hostname in groups['hosts_mongos_data'] %}
+- module: mongodb
+  log:
+    enabled: {{ filebeat.cots.mongodb_offer.mongos.enable_log | bool | lower if inventory_hostname in groups['hosts_mongos_offer'] else filebeat.cots.mongodb_data.mongos.enable_log | bool | lower }}
+    var.paths:
+      - "{{ vitam_defaults.folder.root_path }}/log/mongos/mongo*.log"
+    input:
+      fields_under_root: true
+      fields:
+        kind: log
+        vitam_component: {{ 'mongos_data' if inventory_hostname in groups["hosts_mongos_data"] else 'mongos_offer' }}
+        source: vitam
+        type: cots
+      processors:
+        - decode_json_fields:
+            fields: ["message"]
+            overwrite_keys: true
+            add_error_key: true
+        - script:
+            lang: javascript
+            id: set_log_level
+            source: >
+              function process(event) {
+                event.Put("log_message", event.Get("message.msg"));
+                switch (event.Get("message.s")) {
+                    case "I":
+                        event.Put("log_level", "INFO");
+                        break;
+                    case "W":
+                        event.Put("log_level", "WARN");
+                        break;
+                    case "E":
+                        event.Put("log_level", "ERROR");
+                        break;
+                    case "F":
+                        event.Put("log_level", "FATAL");
+                        break;
+                    default:
+                        event.Put("log_level", "UNKNOWN");
+                }
+              }
+        - drop_event:
+            when:
+              equals:
+                log_level: "INFO"
+{% endif %}
+
+{% if inventory_hostname in groups['hosts_mongoc_offer'] or inventory_hostname in groups['hosts_mongoc_data'] %}
+- module: mongodb
+  log:
+    enabled: {{ filebeat.cots.mongodb_offer.mongoc.enable_log | bool | lower if inventory_hostname in groups['hosts_mongoc_offer'] else filebeat.cots.mongodb_data.mongoc.enable_log | bool | lower }}
+    var.paths:
+      - "{{ vitam_defaults.folder.root_path }}/log/mongoc/mongo*.log"
+    input:
+      fields_under_root: true
+      fields:
+        kind: log
+        vitam_component: {{ 'mongoc_data' if inventory_hostname in groups["hosts_mongoc_data"] else 'mongoc_offer' }}
+        source: vitam
+        type: cots
+      processors:
+        - decode_json_fields:
+            fields: ["message"]
+            overwrite_keys: true
+            add_error_key: true
+        - script:
+            lang: javascript
+            id: set_log_level
+            source: >
+              function process(event) {
+                event.Put("log_message", event.Get("message.msg"));
+                switch (event.Get("message.s")) {
+                    case "I":
+                        event.Put("log_level", "INFO");
+                        break;
+                    case "W":
+                        event.Put("log_level", "WARN");
+                        break;
+                    case "E":
+                        event.Put("log_level", "ERROR");
+                        break;
+                    case "F":
+                        event.Put("log_level", "FATAL");
+                        break;
+                    default:
+                        event.Put("log_level", "UNKNOWN");
+                }
+              }
+        - drop_event:
+            when:
+              equals:
+                log_level: "INFO"
+{% endif %}
+
+{% if inventory_hostname in groups['hosts_mongod_offer'] or inventory_hostname in groups['hosts_mongod_data'] %}
+- module: mongodb
+  log:
+    enabled: {{ filebeat.cots.mongodb_offer.mongod.enable_log | bool | lower if inventory_hostname in groups['hosts_mongod_offer'] else filebeat.cots.mongodb_data.mongod.enable_log | bool | lower }}
+    var.paths:
+      - "{{ vitam_defaults.folder.root_path }}/log/mongod/mongo*.log"
+    input:
+      fields_under_root: true
+      fields:
+        kind: log
+        vitam_component: {{ 'mongod_data' if inventory_hostname in groups["hosts_mongod_data"] else 'mongod_offer' }}
+        source: vitam
+        type: cots
+      processors:
+        - decode_json_fields:
+            fields: ["message"]
+            overwrite_keys: true
+            add_error_key: true
+        - script:
+            lang: javascript
+            id: set_log_level
+            source: >
+              function process(event) {
+                event.Put("log_message", event.Get("message.msg"));
+                switch (event.Get("message.s")) {
+                    case "I":
+                        event.Put("log_level", "INFO");
+                        break;
+                    case "W":
+                        event.Put("log_level", "WARN");
+                        break;
+                    case "E":
+                        event.Put("log_level", "ERROR");
+                        break;
+                    case "F":
+                        event.Put("log_level", "FATAL");
+                        break;
+                    default:
+                        event.Put("log_level", "UNKNOWN");
+                }
+              }
+        - drop_event:
+            when:
+              equals:
+                log_level: "INFO"
+{% endif %}

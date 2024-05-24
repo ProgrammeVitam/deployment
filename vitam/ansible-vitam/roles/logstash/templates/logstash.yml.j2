@@ -25,7 +25,7 @@
 # Which directory should be used by logstash and its plugins
 # for any persistent needs. Defaults to LOGSTASH_HOME/data
 #
-path.data: /var/lib/logstash
+path.data: {{ logstash_data_dir }}
 #
 # ------------ Pipeline Settings --------------
 #
@@ -199,3 +199,7 @@ path.logs: {{ logstash_log_dir }}
 #
 # Where to find custom plugins
 # path.plugins: []
+
+{% if syslog.name | default('filebeat') == "filebeat" %}
+pipeline.ecs_compatibility: disabled
+{% endif %}

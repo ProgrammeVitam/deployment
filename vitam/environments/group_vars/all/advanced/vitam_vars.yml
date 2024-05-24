@@ -136,6 +136,8 @@ vitam_timers:
     frequency_purge_dip: "0 0 * * * ?"
     frequency_purge_transfers_sip: "0 25 2 * * ?"
     frequency_audit_mongodb_es: "0 0 0 1 JAN ? 2020"
+    frequency_persistent_identifier_reconstruction: "0 0 0 1 1 ? 2020"
+
   offer:
     # Compaction offer logs
     frequency_offerlog_compaction: "0 40 * * * ?"
@@ -248,6 +250,8 @@ vitam:
     https_enabled: true
     secret_platform: "false"
     antivirus: "clamav" # or avast
+    # this variable has containerization purposes only : must not be used in production environment
+    ignore_antivirus_check: false
     #scantimeout: 1200000 # value in milliseconds; increase this value if huge files need to be analyzed in more than 20 min (default value)
     # Directory where files should be placed for local ingest
     upload_dir: "/vitam/data/ingest-external/upload"
@@ -363,6 +367,9 @@ vitam:
     transfersSIPTimeToLiveInMinutes: 10080 # 7 days
     unitsStreamThreshold: 1000000 # 1 million
     unitsStreamExecutionLimit: 3 # 3 times
+    persistentIdentifierReconstructionDelayInMinutes: 1440 # 1 day
+    persistentIdentifierReconstructionThreadPoolSize: 10 # parallel tenants reconstruction
+    persistentIdentifierReconstructionBulkSize: 1000 # bulk size
     objectsStreamThreshold: 1000000 # 1 million
     objectsStreamExecutionLimit: 3 # 3 times
     workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
@@ -488,6 +495,9 @@ vitam:
     secret_platform: "true"
     transactionStatusThreadPoolSize: 4
     statusTransactionThreadFrequency: 5
+    bulkAtomicUpdateThreadPoolSize: 8
+    bulkAtomicUpdateThreadPoolQueueSize: 16
+    bulkAtomicUpdateBatchSize: 100
   collect_external:
     vitam_component: collect-external
     host: "collect-external.service.{{ consul_domain }}"
@@ -497,6 +507,8 @@ vitam:
     https_enabled: true
     secret_platform: "false"
     authorizeTrackTotalHits: false # if false, limit results to 10K. if true, authorize results overs 10K (can overload elasticsearch-data)
+    ingestionThreadPoolSize: 4
+    ingestionThreadFrequencySeconds: 5
   metadata_collect:
     vitam_component: metadata-collect
     host: "metadata-collect.service.{{ consul_domain }}"

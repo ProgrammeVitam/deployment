@@ -1,15 +1,14 @@
 ---
 
-vitam_reverse_external_protocol: https
+vitamui_reverse_external_protocol: https
 reverse_connection_params: "acquire=5000 connectiontimeout=300 timeout=600 retry=5"
 
-root_path: "/vitamui/conf"
-nginx_ssl_conf: "/etc/nginx/conf.d/ssl"
-nginx_conf_dir: "/etc/nginx/conf.d"
-nginx_log_dir: "/var/log/nginx"
-nginx_tmp_dir: "/etc/nginx/tmp"
+assets_path: "{{ vitamui_defaults.folder.root_path }}/conf/assets"
 
-secure: "{{ vitamui_default.services.secure | default('true') | lower }}"
+nginx_conf_dir: /etc/nginx/conf.d
+nginx_ssl_dir: /etc/nginx/conf.d/ssl
 
-reverse_group: root
-reverse_user: root
+secure: "{{ vitamui_default.services.secure | default(true) | bool }}"
+
+reverse_group: "{{ vitamui_defaults.users.group | default('vitamui') }}"
+reverse_user: "{{ vitamui_defaults.users.vitamui | default('vitamui') }}"

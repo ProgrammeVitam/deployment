@@ -1,0 +1,7 @@
+---
+
+- import_tasks: install.yml
+  when: frontend_role_goal == 'install'
+
+- import_tasks: uninstall.yml
+  when: frontend_role_goal == 'uninstall'

@@ -1,0 +1,44 @@
+---
+
+filebeat_processors:
+  processors:
+    - add_host_metadata:
+        when.not.contains.tags: forwarded
+    - add_cloud_metadata: ~
+    - add_docker_metadata: ~
+
+filebeat_log:
+  level: WARNING
+  directory: /vitam/log/filebeat
+  filename: filebeat.log
+  keepfiles: 30
+
+items_to_exclude:
+  - hosts
+  - browse
+  - vitamui
+  - ui_search
+  - zone_admin
+  - zone_cas
+  - zone_data
+  - zone_ui
+  - zone_app
+
+filebeat:
+  system:
+    enable_log: false
+    enable_auth: false
+  cots:
+    consul:
+      enable_log: true
+    logstash:
+      enable_log: true
+    apache:
+      enable_access: true
+      enable_log: true
+    nginx:
+      enable_access: true
+      enable_error: true
+      enable_ingress: false
+    mongodb:
+      enable_log: true
