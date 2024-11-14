@@ -1,0 +1,26 @@
+---
+
+- name: Get all archive unit profiles
+  command: "mongosh mongo-data-mongos.service.{{ consul_domain }}:{{ mongodb.mongos_port }}/masterdata -u {{ mongodb['mongo-data'].admin.user }} -p {{ mongodb['mongo-data'].admin.password }} --quiet --eval 'EJSON.stringify(db.ArchiveUnitProfile.find({ SedaVersion: { $exists: false } }, { Identifier: 1, _tenant: 1 }).toArray());'"
+  no_log: "{{ hide_passwords_during_deploy }}"
+  delegate_to: "{{ groups['hosts_mongos_data']|first }}"
+  register: __get_archive_unit_profiles_results
+
+- name: Update archive unit profile
+  uri:
+    url: "{{ _archive_unit_profiles_base_url }}/{{ item.Identifier }}"
+    method: PUT
+    body:
+      $action:
+        - $set:
+            SedaVersion: "{{ default_seda_version }}"
+    body_format: json
+    headers:
+      Content-Type: application/json
+      X-Tenant-Id: "{{ item._tenant }}"
+    client_cert: "{{ _tmp_pem }}"
+    validate_certs: false
+    return_content: yes
+    status_code: 200
+    timeout: 36000
+  with_items: "{{ __get_archive_unit_profiles_results.stdout }}"

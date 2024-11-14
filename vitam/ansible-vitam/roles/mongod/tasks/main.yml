@@ -4,37 +4,40 @@
   package:
     name:
       - mongodb-org-server
-      - vitam-user-vitamdb
     state: present
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
   notify: "mongod - restart service"
-  when: install_mode != "container"
+  when: install_mode != "container" or "mongod" in legacy_components_list
 
-- name: "Install vitam-user-vitamdb packages"
+- name: Install vitam-user-vitamdb package
   package:
     name:
       - vitam-user-vitamdb
-    state: present
+    state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
   notify: "mongod - restart service"
-  when: install_mode == "container"
 
 - name: Disable mongod default service
   service:
     name: mongod
     state: stopped
     enabled: no
-  when: install_mode != "container"
+  when: install_mode != "container" or "mongod" in legacy_components_list
+
+- name: get passwd for vitamdb
+  getent:
+    database: passwd
+    key: "{{ vitam_defaults.users.vitamdb | default('vitamdb') }}"
 
 - name: Deploy systemd service file for vitam-mongod
   template:
-    src: "vitam-{{ 'container-' if install_mode == 'container' else '' }}mongod.service.j2"
+    src: "vitam-{{ 'container-' if install_mode == 'container' and 'mongod' not in legacy_components_list else '' }}mongod.service.j2"
     dest: "{{ '/lib/systemd/system' if ansible_os_family == 'Debian' else '/usr/lib/systemd/system' }}/vitam-mongod.service"
     owner: root
     group: root

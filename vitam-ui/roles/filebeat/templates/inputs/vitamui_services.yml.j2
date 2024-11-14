@@ -1,97 +1,105 @@
 #jinja2: lstrip_blocks: True
 {% for vitamui_service in vitamui_service_list %}
+{% set vitamui_component = vitamui[vitamui_service].vitamui_component %}
 #
-# VITAMUI SERVICE : "{{ vitamui_service }}"
+# VITAMUI SERVICE : "vitamui-{{ vitamui_component }}"
 #
-  {% if filebeat.services[vitamui_service].enable_access | default(true) | bool %}
+  {% if filebeat.services.vitamui[vitamui_service].enable_access | default(true) | bool %}
 - type: filestream
-  id: {{ vitam_site_name }}-{{ vitamui_service }}-access
-  enabled: {{ {'vitamui_iam_internal': filebeat.services.vitamui_iam_internal.enable_access,
-    'vitamui_ingest_internal': filebeat.services.vitamui_ingest_internal.enable_access,
-    'vitamui_referential_internal': filebeat.services.vitamui_referential_internal.enable_access,
-    'vitamui_archive_search_internal': filebeat.services.vitamui_archive_search_internal.enable_access,
-    'vitamui_security_internal': filebeat.services.vitamui_security_internal.enable_access,
-    'vitamui_collect_internal': filebeat.services.vitamui_collect_internal.enable_access,
-    'cas_server': filebeat.services.cas_server.enable_access,
-    'vitamui_iam_external': filebeat.services.vitamui_iam_external.enable_access,
-    'vitamui_ingest_external': filebeat.services.vitamui_ingest_external.enable_access,
-    'vitamui_referential_external': filebeat.services.vitamui_referential_external.enable_access,
-    'vitamui_archive_search_external': filebeat.services.vitamui_archive_search_external.enable_access,
-    'vitamui_collect_external': filebeat.services.vitamui_collect_external.enable_access,
-    'vitamui_pastis_external': filebeat.services.vitamui_pastis_external.enable_access,
-    'vitamui_api_gateway': filebeat.services.vitamui_api_gateway.enable_access} [vitamui_service] | default(true) | bool | lower }}
+  id: {{ vitam_site_name }}-{{ vitamui_component }}-access
+  enabled: true
   paths:
-    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_service }}/accesslog-{{ vitamui_service }}.*.log"
+    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_component }}/accesslog-{{ vitamui_component }}.*.log"
   fields_under_root: true
   fields:
     kind: access
-    vitam_component: vitamui-{{ vitamui_service }}
+    vitam_component: vitamui-{{ vitamui_component }}
     source: vitamui
     type: application
   processors:
+    {% if vitamui_service == 'api_gateway' %}
+    - dissect:
+        tokenizer: '[%{date_time}] %{client_ip|ip} - - [%{misformated_date_time}] "%{http_method} %{request_path} HTTP/%{http_version}" %{http_status_code|integer} %{response_size}'
+        target_prefix: ""
+    - timestamp:
+        field: date_time
+        layouts:
+          - '2006-01-02 15:04:05,000'
+        test:
+          - '2024-09-30 13:46:37,298'
+    - drop_fields:
+        fields: ["date_time", "misformated_date_time"]
+      {% if filebeat.drop_health_checks_logs | default(true) | bool %}
+    # Drop health checks
+    - drop_event:
+        when:
+          and:
+            - equals:
+                http_status_code: 200
+            - equals:
+                request_path: "/actuator/health"
+      {% endif %}
+    {% else %}
     - dissect:
         tokenizer: '%{client_ip|ip} - - [%{date_time}] "%{http_method} %{request_path} HTTP/%{http_version}" %{http_status_code|integer} %{response_size}'
         target_prefix: ""
+    - timestamp:
+        field: date_time
+        layouts:
+          - '02/Jan/2006:15:04:05 -0700'
+        test:
+          - '30/Sep/2024:13:46:37 +0200'
     - drop_fields:
         fields: ["date_time"]
-  {% endif %}
+    {% endif %}
 
-  {% if filebeat.services[vitamui_service].enable_management | default(true) | bool %}
+  {% endif %}
+  {% if filebeat.services.vitamui[vitamui_service].enable_management | default(true) | bool %}
 - type: filestream
-  id: {{ vitam_site_name }}-{{ vitamui_service }}-management
-  enabled: {{ {'vitamui_iam_internal': filebeat.services.vitamui_iam_internal.enable_management,
-    'vitamui_ingest_internal': filebeat.services.vitamui_ingest_internal.enable_management,
-    'vitamui_referential_internal': filebeat.services.vitamui_referential_internal.enable_management,
-    'vitamui_archive_search_internal': filebeat.services.vitamui_archive_search_internal.enable_management,
-    'vitamui_security_internal': filebeat.services.vitamui_security_internal.enable_management,
-    'vitamui_collect_internal': filebeat.services.vitamui_collect_internal.enable_management,
-    'cas_server': filebeat.services.cas_server.enable_management,
-    'vitamui_iam_external': filebeat.services.vitamui_iam_external.enable_management,
-    'vitamui_ingest_external': filebeat.services.vitamui_ingest_external.enable_management,
-    'vitamui_referential_external': filebeat.services.vitamui_referential_external.enable_management,
-    'vitamui_archive_search_external': filebeat.services.vitamui_archive_search_external.enable_management,
-    'vitamui_collect_external': filebeat.services.vitamui_collect_external.enable_management,
-    'vitamui_pastis_external': filebeat.services.vitamui_pastis_external.enable_management,
-    'vitamui_api_gateway': filebeat.services.vitamui_api_gateway.enable_management} [vitamui_service] | default(true) | bool | lower }}
+  id: {{ vitam_site_name }}-{{ vitamui_component }}-management
+  enabled: true
   paths:
-    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_service }}/management_accesslog-{{ vitamui_service }}.*.log"
+    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_component }}/management_accesslog-{{ vitamui_component }}.*.log"
   fields_under_root: true
   fields:
     kind: management
-    vitam_component: vitamui-{{ vitamui_service }}
+    vitam_component: vitamui-{{ vitamui_component }}
     source: vitamui
     type: application
   processors:
     - dissect:
         tokenizer: '%{client_ip|ip} - - [%{date_time}] "%{http_method} %{request_path} HTTP/%{http_version}" %{http_status_code|integer} %{response_size}'
         target_prefix: ""
+    - timestamp:
+        field: date_time
+        layouts:
+          - '02/Jan/2006:15:04:05 -0700'
+        test:
+          - '30/Sep/2024:13:46:37 +0200'
     - drop_fields:
         fields: ["date_time"]
-  {% endif %}
+    {% if filebeat.drop_health_checks_logs | default(true) | bool %}
+    # Drop health checks
+    - drop_event:
+        when:
+          and:
+            - equals:
+                http_status_code: 200
+            - equals:
+                request_path: "/actuator/health"
+    {% endif %}
 
-  {% if filebeat.services[vitamui_service].enable_log | default(true) | bool %}
+  {% endif %}
+  {% if filebeat.services.vitamui[vitamui_service].enable_log | default(true) | bool %}
 - type: filestream
-  id: {{ vitam_site_name }}-{{ vitamui_service }}-log
-  enabled: {{ {'vitamui_iam_internal': filebeat.services.vitamui_iam_internal.enable_log,
-    'vitamui_ingest_internal': filebeat.services.vitamui_ingest_internal.enable_log,
-    'vitamui_referential_internal': filebeat.services.vitamui_referential_internal.enable_log,
-    'vitamui_archive_search_internal': filebeat.services.vitamui_archive_search_internal.enable_log,
-    'vitamui_security_internal': filebeat.services.vitamui_security_internal.enable_log,
-    'vitamui_collect_internal': filebeat.services.vitamui_collect_internal.enable_log,
-    'cas_server': filebeat.services.cas_server.enable_log,
-    'vitamui_iam_external': filebeat.services.vitamui_iam_external.enable_log,
-    'vitamui_ingest_external': filebeat.services.vitamui_ingest_external.enable_log,
-    'vitamui_referential_external': filebeat.services.vitamui_referential_external.enable_log,
-    'vitamui_archive_search_external': filebeat.services.vitamui_archive_search_external.enable_log,
-    'vitamui_collect_external': filebeat.services.vitamui_collect_external.enable_log,
-    'vitamui_pastis_external': filebeat.services.vitamui_pastis_external.enable_log,
-    'vitamui_api_gateway': filebeat.services.vitamui_api_gateway.enable_log} [vitamui_service] | default(true) | bool | lower }}
+  id: {{ vitam_site_name }}-{{ vitamui_component }}-log
+  enabled: true
   paths:
-    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_service }}/{{ vitamui_service }}.*.log"
+    - "{{ vitamui_defaults.folder.root_path }}/log/{{ vitamui_component }}/{{ vitamui_component }}.*.log"
   fields_under_root: true
   fields:
     kind: log
-    vitam_component: vitamui-{{ vitamui_service }}
+    vitam_component: vitamui-{{ vitamui_component }}
     source: vitamui
     type: application
   processors:
@@ -99,6 +107,12 @@
         tokenizer: '%{date_time} [[%{thread}]] [%{request_id}] %{log_level} %{logger} - %{log_message}'
         target_prefix: ""
         trim_values: all
+    - timestamp:
+        field: date_time
+        layouts:
+          - '2006-01-02 15:04:05,000'
+        test:
+          - '2024-09-30 13:46:37,298'
     - drop_fields:
         fields: ["date_time"]
   parsers:
@@ -107,5 +121,6 @@
         pattern: '^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}'
         negate: true
         match: after
+
   {% endif %}
 {% endfor %}

@@ -83,6 +83,9 @@ vitamui:
   pastis:
     vitamui_component: ui-pastis
     port_service: 9015
+  design_system:
+    vitamui_component: ui-design-system
+    port_service: 9016
 
   # Applications
   api_gateway:
@@ -203,7 +206,6 @@ vitamui_platform_informations:
     max_street_length: 250
   proof_tenant: 1
   cas_tenant: -1
-  first_customer_tenant: 1 # The real first one will be +1 (= 2)
   portal_message: "Pour gérer vos archives, profitez d'un portail d'applications proposé par le Programme Vitam et ses contributeurs."
   portal_title: "Portail des applications Vitam"
   theme:
@@ -215,12 +217,12 @@ vitamui_platform_informations:
     footer_logo: logo_FOOTER.png
     user_logo: logo_USER.png
     theme_colors:
-      vitamui_primary: "#702382"
-      vitamui_secondary: "#2563A9"
+      vitamui_primary: "#9C31B5"
+      vitamui_secondary: "#296EBC"
       vitamui_tertiary: "#C22A40"
       vitamui_header_footer: "#ffffff"
-      vitamui_background: "#F5F7FC"
-      cas_background: "#F5F7FC"
+      vitamui_background: "#FCF7FD"
+      cas_background: "#FCF7FD"
   platform_name: VITAM-UI
   customer:
     technical_referent_email: contact@programmevitam.fr

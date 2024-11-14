@@ -127,8 +127,6 @@ vitam_timers:
     frequency_accession_register_reconstruction: "0 0/5 * * * ?"
     frequency_rule_management_audit: "0 40 * * * ?"
     frequency_reconstruction: "0 0/5 * * * ?"
-    frequency_integrity_audit: "0 0 0 1 JAN ? 2020"
-    frequency_existence_audit: "0 0 0 1 JAN ? 2020"
   metadata:
     frequency_store_graph: "0 10/30 * * * ?"
     frequency_reconstruction: "0 0/5 * * * ?"
@@ -144,11 +142,16 @@ vitam_timers:
 
 scheduler:
   job_parameters:
-    integrity_audit:
-      operations_delay_in_minutes: 1440
-    existence_audit:
-      operations_delay_in_minutes: 1440
-
+#    integrity_audit:
+#      - key: SYSTEM
+#        selected_tenants: [1]
+#        operations_delay_in_minutes: 1440
+#        frequency: "0 0 2 ? * * *" # Every day at 2am
+#    existence_audit:
+#      - key: SYSTEM
+#        selected_tenants: [1]
+#        operations_delay_in_minutes: 1440
+#        frequency: "0 0 2 ? * * *" # Every day at 2am
 
 ### consul ###
 # WARNING: consul_domain should be a supported domain name for your organization
@@ -374,8 +377,9 @@ vitam:
     objectsStreamExecutionLimit: 3 # 3 times
     workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
     elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata/mapping" # Directory of elasticsearch metadata mapping
-    #### Audit data consistency MongoDB-ES ####
+    #### Audit data consistency MongoDB-ES #### (Experimental / Not for Production)
     isDataConsistencyAuditRunnable: false
+    enableDataConsistencyRectificationMode: false
     dataConsistencyAuditOplogMaxSize: 100
     # Reconstruction metrics cache in minutes (secondary site)
     reconstructionMetricsCacheDurationInMinutes: 15
@@ -530,9 +534,7 @@ vitam:
     transfersSIPTimeToLiveInMinutes: 10080 # 7 days
     workspaceFreespaceThreshold: 25 # when below use critical time to live when above use normal time to live
     elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/metadata-collect/mapping" # Directory of elasticsearch metadata mapping
-    #### Audit data consistency MongoDB-ES ####
-    isDataConsistencyAuditRunnable: false
-    dataConsistencyAuditOplogMaxSize: 100
+    refreshElasticIndexPostIndexingMode: true
     context_path: "/metadata-collect"
   workspace_collect:
     vitam_component: workspace-collect

@@ -1,23 +1,32 @@
 ---
 
-- name: Install openjdk on Debian
-  apt:
-    name: "{{ 'openjdk-11-jre-headless' if ansible_distribution_version | int < 12 else 'openjdk-17-jre-headless' }}"
+- name: Remove openjdk 11
+  package:
+    name: "{{ 'openjdk-11-jre-headless' if ansible_os_family == 'Debian' else 'java-11-openjdk-headless' }}"
+    state: absent
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+  when: (install_mode != "container") or (vitam_struct.vitam_component in legacy_components_list)
+  tags: update_package_vitam
+
+- name: Install openjdk 17
+  package:
+    name: "{{ 'openjdk-17-jre-headless' if ansible_os_family == 'Debian' else 'java-17-openjdk-headless' }}"
     state: latest
   register: result
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
-  when:
-    - ansible_os_family == "Debian"
-    - install_mode != "container"
+  when: (install_mode != "container") or (vitam_struct.vitam_component in legacy_components_list)
   tags: update_package_vitam
 
 - include_tasks: tape_offer.yml
   when: vitam_struct.vitam_component == "offer"
 
 # state: latest to handle snapshot versions
-- name: Install {{ package_name }} package
+- name: "Install {{ package_name }} package"
   package:
     name: "{{ package_name }}"
     state: latest
@@ -25,19 +34,17 @@
   retries: "{{ packages_install_retries_number }}"
   until: result is succeeded
   delay: "{{ packages_install_retries_delay }}"
-  tags:
-    - update_package_vitam
-  notify:
-    - "vitam - restart service"
-  when: force_vitam_version is not defined and install_mode != "container"
+  tags: update_package_vitam
+  notify: "vitam - restart service"
+  when: (force_vitam_version is not defined and install_mode != "container") or (force_vitam_version is not defined and (vitam_struct.vitam_component in legacy_components_list))
 
 # Force a specific version to install (even downgrade)
 - block:
 
-    - name: Install {{ package_name }} package
+    - name: "Install {{ package_name }} package"
       apt:
         name: "{{ package_name }}={{ force_vitam_version }}"
-        force: yes
+        force: true
         state: present
       register: result
       retries: "{{ packages_install_retries_number }}"
@@ -51,7 +58,7 @@
 
     - name: Install {{ package_name }} package
       yum:
-        allow_downgrade : yes
+        allow_downgrade: true
         name: "{{ package_name }}-{{ force_vitam_version }}"
         state: present
       register: result
@@ -64,7 +71,7 @@
         - "vitam - restart service"
       when: ansible_os_family == "RedHat"
 
-  when: force_vitam_version is defined and install_mode != "container"
+  when: (force_vitam_version is defined and install_mode != "container") or (force_vitam_version is defined and (vitam_struct.vitam_component in legacy_components_list))
 
 #### Configuration ####
 
@@ -97,7 +104,7 @@
     mode: "{{ vitam_defaults.folder.folder_permission }}"
   notify:
     - "vitam - restart service"
-  when: install_mode != "container"
+  when: install_mode != "container" or (vitam_struct.vitam_component in legacy_components_list)
 
 - name: Deploy script for ExecStart
   template:
@@ -110,7 +117,7 @@
     - update_vitam_configuration
   notify:
     - "vitam - restart service"
-  when: install_mode != "container"
+  when: install_mode != "container" or (vitam_struct.vitam_component in legacy_components_list)
 
 - name: Set Debian systemd directory
   set_fact:
@@ -119,16 +126,21 @@
   tags:
     - update_vitam_configuration
 
-- name: Set Centos systemd directory
+- name: Set RedHat systemd directory
   set_fact:
     systemd_directory: "/usr/lib/systemd/system"
   when: ansible_os_family == "RedHat"
   tags:
     - update_vitam_configuration
 
+- name: get passwd for vitam
+  getent:
+    database: passwd
+    key: "{{ vitam_defaults.users.vitam | default('vitam') }}"
+
 - name: Deploy systemd service file
   template:
-    src: "vitam-{{ 'container-' if install_mode == 'container' else '' }}componentid.service.j2"
+    src: "vitam-{{ 'container-' if install_mode == 'container' and vitam_struct.vitam_component not in legacy_components_list else '' }}componentid.service.j2"
     dest: "{{ systemd_directory }}/vitam-{{ vitam_struct.vitam_component }}.service"
     owner: "root"
     group: "root"
@@ -151,7 +163,7 @@
     - update_jvmoptions_vitam
   notify:
     - "vitam - restart service"
-  when: install_mode != "container"
+  when: install_mode != "container" or (vitam_struct.vitam_component in legacy_components_list)
 
 - name: Deploy common configuration files
   template:
@@ -191,6 +203,11 @@
 - include_tasks: storage.yml
   tags: always
   when: vitam_struct.vitam_component == "storage" or vitam_struct.vitam_component == "ihm-recette"
+
+- include_tasks: elasticsearch-settings.yml
+  when: vitam_struct.vitam_component in ['metadata', 'metadata-collect','ihm-recette', 'logbook', 'functional-administration']
+  tags:
+    - update_vitam_configuration
 
 - name: Deploy specific configuration files (can override the common configuration files)
   template:
@@ -353,49 +370,52 @@
 
 - meta: flush_handlers
 
-- name: Ensure "{{ package_name }}" service is disabled and stopped on secondary site
+- name: "Ensure {{ package_name }} service is disabled and stopped on secondary site"
   service:
     name: "vitam-{{ vitam_struct.vitam_component }}"
     enabled: false
     state: stopped
   when: ( primary_site | lower == "false" ) and
-        ( vitam_struct.vitam_component not in vitam_secondary_site_components )
+    ( vitam_struct.vitam_component not in vitam_secondary_site_components )
 
 - block:
 
-  - name: Ensure "{{ package_name }}" service is started at boot
-    service:
-      name: "vitam-{{ vitam_struct.vitam_component }}"
-      state: started
-      enabled: "{{ vitam_struct.at_boot | default(service_at_boot) }}"
+    - name: "Ensure {{ package_name }} service is started at boot"
+      service:
+        name: "vitam-{{ vitam_struct.vitam_component }}"
+        state: started
+        enabled: "{{ vitam_struct.at_boot | default(service_at_boot) }}"
 
-  - name: Check if "{{ package_name }}" service is listening on service port (tcp check)
-    wait_for:
-      host: "{{ ip_service }}"
-      port: "{{ vitam_struct.port_service }}"
-      state: started
-      timeout: "{{ vitam_defaults.services.start_timeout }}"
+    - name: "Check if {{ package_name }} service is listening on service port (tcp check)"
+      wait_for:
+        host: "{{ ip_service }}"
+        port: "{{ vitam_struct.port_service }}"
+        state: started
+        timeout: "{{ vitam_defaults.services.start_timeout }}"
 
-  - name: Check if "{{ package_name }}" service is listening on service port (http check)
-    uri:
-      url: "http://{{ ip_admin }}:{{ vitam_struct.port_admin }}/admin/v1/status"
-    register: result
-    until:
-      - result.status is defined
-      - result.status == 200
-    retries: "{{ vitam_defaults.services.status_retries_number }}"
-    delay: "{{ vitam_defaults.services.status_retries_delay }}"
+    - name: "Check if {{ package_name }} service is listening on service port (http check)"
+      uri:
+        url: "http://{{ ip_admin }}:{{ vitam_struct.port_admin }}/admin/v1/status"
+      register: result
+      until:
+        - result.status is defined
+        - result.status == 200
+      retries: "{{ vitam_defaults.services.status_retries_number }}"
+      delay: "{{ vitam_defaults.services.status_retries_delay }}"
 
-  - name: Check {{ vitam_struct.vitam_component }} service health in local consul agent
-    uri:
-      url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname]['ip_admin'], '127.0.0.1') }}:8500/v1/agent/health/service/name/{{ (vitam_struct.vitam_component == vitam.storageofferdefault.vitam_component) | ternary(offer_conf, vitam_struct.vitam_component) }}"
-    register: result
-    until:
-      - result.status is defined
-      - result.status == 200
-    retries: "{{ vitam_defaults.services.status_retries_number }}"
-    delay: "{{ vitam_defaults.services.status_retries_delay }}"
-    when: consul_disabled is not defined or consul_disabled | lower != 'true'
+    - name: "Check {{ vitam_struct.vitam_component }} service health in local consul agent"
+      uri:
+        url: "http://{{ (inventory_hostname in groups['hosts_consul_server']) | ternary(hostvars[inventory_hostname]['ip_admin'], '127.0.0.1') }}:8500/v1/agent/health/service/name/{{ (vitam_struct.vitam_component == vitam.storageofferdefault.vitam_component) | ternary(offer_conf, vitam_struct.vitam_component) }}"
+      register: result
+      until:
+        - result.status is defined
+        - result.status == 200
+      retries: "{{ vitam_defaults.services.status_retries_number }}"
+      delay: "{{ vitam_defaults.services.status_retries_delay }}"
+      when: consul_disabled is not defined or consul_disabled | lower != 'true'
 
+  tags:
+    - update_vitam_configuration
+    - update_vitam_certificates
   when: ( primary_site | lower == "true" ) or
-        ( vitam_struct.vitam_component in vitam_secondary_site_components )
+    ( vitam_struct.vitam_component in vitam_secondary_site_components )

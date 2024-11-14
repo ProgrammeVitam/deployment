@@ -23,6 +23,8 @@ transfersSIPTimeToLiveInMinutes: {{ vitam.metadata.transfersSIPTimeToLiveInMinut
 reconstructionMetricsCacheDurationInMinutes: {{ vitam.metadata.reconstructionMetricsCacheDurationInMinutes | default(15) }}
 {% endif %}
 
+refreshElasticIndexPostBulkIndexing: {{ vitam.metadata.refreshElasticIndexPostBulkIndexing | default(true) }}
+
 # Units and Objects Stream Threshold
 unitsStreamThreshold: {{ vitam.metadata.unitsStreamThreshold | default(1000000) }}
 unitsStreamExecutionLimit: {{ vitam.metadata.unitsStreamExecutionLimit | default(3) }}
@@ -49,6 +51,7 @@ jettyConfig: jetty-config.xml
 
 # ElasticSearch
 clusterName: {{ vitam_struct.cluster_name }}
+elasticsearchConfigurationFile: {{ vitam_folder_conf }}/elasticsearch-settings/elasticsearch-configuration.json
 elasticsearchNodes:
 {% for server in groups['hosts_elasticsearch_data'] %}
 - hostName: {{ hostvars[server]['ip_service'] }}
@@ -128,8 +131,11 @@ adminBasicAuth:
 - userName: {{ admin_basic_auth_user }}
   password: {{ admin_basic_auth_password }}
 
+# Metadata Consistency Audit (Experimental / Not for Production)
 isDataConsistencyAuditRunnable: {{ vitam.metadata.isDataConsistencyAuditRunnable | default(false) }}
+enableDataConsistencyRectificationMode:  {{ vitam.metadata.enableDataConsistencyRectificationMode | default(false) }}
 dataConsistencyAuditOplogMaxSize: {{ vitam.metadata.dataConsistencyAuditOplogMaxSize | default(100) }}
+
 mongodShardsConf:
   dbUserName: {{ mongodb['mongo-data']['localadmin']['user'] }}
   dbPassword: {{ mongodb['mongo-data']['localadmin']['password'] }}

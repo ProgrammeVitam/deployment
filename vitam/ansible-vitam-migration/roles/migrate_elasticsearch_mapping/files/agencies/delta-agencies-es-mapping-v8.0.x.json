@@ -1,0 +1,68 @@
+{
+  "properties": {
+    "EntityType": {
+      "type": "keyword"
+    },
+    "NameEntryParallel": {
+      "type": "text"
+    },
+    "AuthorizedForm": {
+      "type": "text"
+    },
+    "AlternativeForm": {
+      "type": "text"
+    },
+    "EntityId": {
+      "type": "keyword"
+    },
+    "FromDate": {
+      "type": "date",
+      "format": "strict_date_optional_time"
+    },
+    "ToDate": {
+      "type": "date",
+      "format": "strict_date_optional_time"
+    },
+    "Functions": {
+      "type": "keyword"
+    },
+    "BiogHist": {
+      "type": "text"
+    },
+    "Places": {
+      "type": "text"
+    },
+    "LegalStatuses": {
+      "type": "text"
+    },
+    "Mandates": {
+      "type": "text"
+    },
+    "StructureOrGenealogy": {
+      "type": "text"
+    },
+    "GeneralContext": {
+      "type": "text"
+    },
+    "CreationDate": {
+      "type": "date",
+      "format": "strict_date_optional_time"
+    },
+    "UpdateDate": {
+      "type": "date",
+      "format": "strict_date_optional_time"
+    },
+    "MaintenanceStatus": {
+      "type": "keyword"
+    },
+    "LocalStatus": {
+      "type": "keyword"
+    },
+    "Sources": {
+      "type": "text"
+    },
+    "EventDescription": {
+      "type": "text"
+    }
+  }
+}

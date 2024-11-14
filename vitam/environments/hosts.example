@@ -7,14 +7,15 @@ vitam
 reverse
 hosts_dev_tools
 ldap
+hosts_vitamui
 
 ########### Tests environments specifics ###########
 
 # EXTRA : Front reverse-proxy (test environments ONLY) ; add machine name after
 [reverse]
-# optional : after machine, if this machine is different from VITAM machines, you can specify another become user
+# optional : if this machine is different from VITAM machines, you can specify another become user
 # Example
-# vitam-centos-01.vitam ansible_ssh_user=centos
+# vm-reverse.vitam ansible_ssh_user=reverse_user
 
 
 [ldap] # Extra : OpenLDAP server
@@ -402,6 +403,20 @@ hosts_alertmanager
 
 [hosts_grafana]
 # TODO: Put here servers where this service will be deployed : grafana-server
+
+
+################################################################################
+# ZONE VITAMUI
+################################################################################
+[hosts_vitamui]
+# optional: To deploy exporters on VitamUI
+
+
+[hosts_vitamui:children]
+hosts_vitamui_mongod
+
+[hosts_vitamui_mongod]
+# optional: To deploy mongodb-exporter on VitamUI
 
 
 ########### Global vars ###########
