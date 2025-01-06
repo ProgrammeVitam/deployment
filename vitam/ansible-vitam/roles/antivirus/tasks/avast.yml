@@ -100,14 +100,7 @@
     owner: avast
     group: avast
     mode: 0640
-
-# VPS is downloaded during the installation of avast package, unless the VPS repository wasn't properly configured.
-# So we need to download it once to properly start avast service.
-- name: Update Avast VPS
-  command: /var/lib/avast/Setup/avast.vpsupdate
-  args:
-    creates: /var/lib/avast/Setup/filedir/vps9.raw
-  notify: restart avast
+  notify: restart avastvps
 
 - name: Create whitelist file
   template:
@@ -125,6 +118,16 @@
     name: avast
     enabled: "{{ avast.at_boot | default(service_at_boot) }}"
     state: started
+
+- name: Install logrotate package
+  package:
+    name: logrotate
+    state: latest
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+  when: avast.logrotate | default('enabled') | lower == 'enabled'
 
 - name: Enable logrotate for Avast
   template:
