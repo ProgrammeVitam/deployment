@@ -24,6 +24,16 @@
     - "kibana - restart service"
   when: install_mode != "container"
 
+- name: remove useless parameters from kibana service
+  lineinfile:
+    path: /etc/systemd/system/kibana.service
+    regexp: '^ExecStart='
+    line: 'ExecStart=/usr/share/kibana/bin/kibana'
+    state: present
+  notify:
+    - "kibana - restart service"
+  when: install_mode != "container"
+
 - block:
 
   - name: Deploy systemd service file for kibana
@@ -72,6 +82,16 @@
     owner: kibana
     group: kibana
     mode: "{{ '0777' if install_mode == 'container' else vitam_defaults.folder.folder_permission }}"
+
+- name: Install logrotate package
+  package:
+    name: logrotate
+    state: latest
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+  when: kibana.logrotate | default('enabled') | lower == 'enabled'
 
 - name: Enable logrotate for Kibana
   template:

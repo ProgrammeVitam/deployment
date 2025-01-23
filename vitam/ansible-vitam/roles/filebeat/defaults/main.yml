@@ -1,5 +1,8 @@
 ---
 
+filebeat_version: "{{ filebeat.version | default('7.17.23') }}"
+filebeat_package: "filebeat{{ '=' if ansible_os_family == 'Debian' else '-' }}{{ filebeat_version }}"
+
 filebeat_processors:
   processors:
     - add_host_metadata:
@@ -14,10 +17,11 @@ filebeat_log:
   keepfiles: 30
 
 cots_list:
-  - cerebro
-  - grafana
-  - prometheus
-  - alertmanager
+  - consul
+  # - cerebro
+  # - grafana
+  # - prometheus
+  # - alertmanager
 
 filebeat:
   system:
@@ -27,8 +31,8 @@ filebeat:
     consul:
       enable_log: true
     antivirus:
-      enable_scan: true
-      enable_log: true
+      enable_scan: false
+      enable_log: false
     kibana_data:
       enable_log: true
       enable_audit: true

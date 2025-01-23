@@ -43,6 +43,14 @@
     group: "clamav"
     mode: "{{ vitam_defaults.folder.folder_permission }}"
 
+- name: ensure clamav tmp directory exists
+  file:
+    path: "{{ vitam_defaults.folder.root_path }}/tmp/clamav"
+    state: directory
+    owner: "{{ vitam_defaults.users.vitam }}"
+    group: "{{ vitam_defaults.users.group }}"
+    mode: "{{ vitam_defaults.folder.folder_permission }}"
+
 - name: apply custom config file for clamAV
   template:
     src: clamav/scan.conf.j2
@@ -61,9 +69,18 @@
     owner: root
     group: root
     mode: 0644
-  notify:
-    - restart clamav
+  notify: restart clamav
   when: ansible_os_family == "Debian"
+
+- name: Install logrotate package
+  package:
+    name: logrotate
+    state: latest
+  register: result
+  retries: "{{ packages_install_retries_number }}"
+  until: result is succeeded
+  delay: "{{ packages_install_retries_delay }}"
+  when: clamav.logrotate | default('enabled') | lower == 'enabled'
 
 - name: Enable logrotate for clamAV
   template:
@@ -87,8 +104,7 @@
     owner: root
     group: root
     mode: 0644
-  notify:
-    - restart clamav
+  notify: restart freshclam
 
 - block:
 
@@ -129,11 +145,18 @@
       group: root
       mode: 0644
 
-  - name: Modify /etc/apparmor.d/usr.sbin.clamd
+  - name: Modify /etc/apparmor.d/usr.sbin.clamd for log directory
     replace:
       path: /etc/apparmor.d/usr.sbin.clamd
       regexp: '/var/log/clamav/\* krw,'
-      replace: '/vitam/log/clamav/* krw,'
+      replace: "{{ vitam_defaults.folder.root_path }}/log/clamav/* krw,"
+    register: updated_apparmor_clamd
+
+  - name: Modify /etc/apparmor.d/usr.sbin.clamd for tmp directory
+    replace:
+      path: /etc/apparmor.d/usr.sbin.clamd
+      regexp: '^(\s+)/tmp/(.*)'
+      replace: "\\1{{ vitam_defaults.folder.root_path }}/tmp/clamav/\\2"
     register: updated_apparmor_clamd
 
   - name: reload apparmor clamd
@@ -163,14 +186,14 @@
   - name: reload apparmor freshclam
     command: aa-enforce /usr/bin/freshclam
     when: updated_apparmor_freshclam is changed
- 
+
   - name: update database for clamAV
     shell: freshclam
     ignore_errors: true
     notify:
       - restart clamav
       - restart freshclam
-  
+
   - meta: flush_handlers
 
   - name: ensure clamav-freshclam is started

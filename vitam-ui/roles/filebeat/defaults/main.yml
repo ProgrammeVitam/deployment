@@ -1,5 +1,8 @@
 ---
 
+filebeat_version: "{{ filebeat.version | default('7.17.23') }}"
+filebeat_package: "filebeat{{ '=' if ansible_os_family == 'Debian' else '-' }}{{ filebeat_version }}"
+
 filebeat_processors:
   processors:
     - add_host_metadata:
@@ -12,17 +15,6 @@ filebeat_log:
   directory: /vitam/log/filebeat
   filename: filebeat.log
   keepfiles: 30
-
-items_to_exclude:
-  - hosts
-  - browse
-  - vitamui
-  - ui_search
-  - zone_admin
-  - zone_cas
-  - zone_data
-  - zone_ui
-  - zone_app
 
 filebeat:
   system:
@@ -42,3 +34,7 @@ filebeat:
       enable_ingress: false
     mongodb:
       enable_log: true
+  services:
+    vitamui:
+      api_gateway:
+        enable_management: false
