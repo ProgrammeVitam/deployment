@@ -198,8 +198,8 @@ function generateHostCertAndStorePassphrase {
                                     ${CA_INTERMEDIATE_PASSWORD} \
                                     ${SERVER} \
                                     "server" \
-                                    "${COMPONENT}.service.${CONSUL_DOMAIN}" \
-                                    "${COMPONENT}.service.${DC_NAME}.${CONSUL_DOMAIN}" \
+                                    "vitamui-${COMPONENT}.service.${CONSUL_DOMAIN}" \
+                                    "vitamui-${COMPONENT}.service.${DC_NAME}.${CONSUL_DOMAIN}" \
                                     "${REVERSE_SAN}"
             # Store the key to the vault
             setComponentPassphrase certs "server_${COMPONENT}_key" \
@@ -277,7 +277,7 @@ function getConsulDomain {
 function getDcName {
     # Get DC_NAME
     VITAMUI_SITE_NAME=$(read_ansible_var "vitamui_site_name" "hosts_vitamui_consul_server[0]")
-    if [[ "$VITAMUI_SITE_NAME" =~ "VARIABLEISNOTDEFINED" ]]; then
+    if [[ -z "$VITAMUI_SITE_NAME" || "$VITAMUI_SITE_NAME" =~ "VARIABLEISNOTDEFINED" ]]; then
         VITAM_SITE_NAME=$(read_ansible_var "vitam_site_name" "hosts_cas_server[0]")
         echo $VITAM_SITE_NAME
     else

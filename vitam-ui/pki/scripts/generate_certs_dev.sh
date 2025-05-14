@@ -17,6 +17,10 @@ function getHostCertificateCn {
     echo "dev.vitamui.com"
 }
 
+function getHostCertificateSan {
+    echo "DNS:dev.vitamui.com,DNS:localhost"
+}
+
 function generateCerts {
 
     # Copy CA
@@ -28,20 +32,15 @@ function generateCerts {
     # Generate hosts certificates
     pki_logger "Génération des certificats serveurs"
     # Zone interne
-    generateHostCertAndStorePassphrase          security-internal   hosts_vitamui_security_internal
-    generateHostCertAndStorePassphrase          iam-internal        hosts_vitamui_iam_internal
-    generateHostCertAndStorePassphrase          referential-internal        hosts_vitamui_referential_internal
-    generateHostCertAndStorePassphrase          ingest-internal     hosts_vitamui_ingest_internal
-    generateHostCertAndStorePassphrase          archive-search-internal     hosts_vitamui_archive_search_internal
-    generateHostCertAndStorePassphrase          collect-internal     hosts_vitamui_collect_internal
+    generateHostCertAndStorePassphrase          security            hosts_vitamui_security
     #Zone externe
-    generateHostCertAndStorePassphrase          iam-external        hosts_vitamui_iam_external
+    generateHostCertAndStorePassphrase          iam                 hosts_vitamui_iam
     generateHostCertAndStorePassphrase          cas-server          hosts_cas_server
-    generateHostCertAndStorePassphrase          referential-external        hosts_vitamui_referential_external
-    generateHostCertAndStorePassphrase          ingest-external     hosts_vitamui_ingest_external
-    generateHostCertAndStorePassphrase          archive-search-external     hosts_vitamui_archive_search_external
-    generateHostCertAndStorePassphrase          collect-external     hosts_vitamui_collect_external
-    generateHostCertAndStorePassphrase          pastis-external     hosts_vitamui_pastis_external
+    generateHostCertAndStorePassphrase          referential         hosts_vitamui_referential
+    generateHostCertAndStorePassphrase          ingest              hosts_vitamui_ingest
+    generateHostCertAndStorePassphrase          archive-search      hosts_vitamui_archive_search
+    generateHostCertAndStorePassphrase          collect             hosts_vitamui_collect
+    generateHostCertAndStorePassphrase          pastis              hosts_vitamui_pastis
     generateHostCertAndStorePassphrase          api-gateway         hosts_vitamui_api_gateway
     #Zone UI
     generateHostCertAndStorePassphrase          ui-portal           hosts_ui_portal

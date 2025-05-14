@@ -1,6 +1,6 @@
 ---
 
-filebeat_version: "{{ filebeat.version | default('8.14.3') }}"
+filebeat_version: "{{ filebeat.version | default('8.18.0') }}"
 filebeat_package: "filebeat{{ '=' if ansible_os_family == 'Debian' else '-' }}{{ filebeat_version }}"
 
 filebeat_processors:
@@ -24,6 +24,8 @@ cots_list:
   # - alertmanager
 
 filebeat:
+  config:
+    ignore_older: "24h"
   system:
     enable_log: false
     enable_auth: false

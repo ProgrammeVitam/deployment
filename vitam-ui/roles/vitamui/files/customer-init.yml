@@ -214,6 +214,9 @@ customer-init:
         - ROLE_TRANSFER_ACKNOWLEDGMENT
         - ROLE_GET_RULES
         - ROLE_GET_SCHEMAS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_GET_FILLING_PLAN_ACCESS
 
     - name: Consultation
       description: Profil pour la recherche et consultation des archives dans Vitam sans mises à jour des règles, sans export DIP et sans élimination
@@ -225,6 +228,9 @@ customer-init:
         - ROLE_GET_ACCESS_CONTRACTS
         - ROLE_GET_RULES
         - ROLE_GET_SCHEMAS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_GET_FILLING_PLAN_ACCESS
 
     - name: Archiviste
       description: Profil pour la recherche et consultation des archives dans Vitam sans mises à jour des règles de gestion, avec export DIP et sans élimination
@@ -237,6 +243,9 @@ customer-init:
         - ROLE_GET_ACCESS_CONTRACTS
         - ROLE_GET_RULES
         - ROLE_GET_SCHEMAS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_GET_FILLING_PLAN_ACCESS
 
     - name: Registre des fonds
       description: Visualisation de l'ensemble des données du registre des fonds
@@ -250,7 +259,7 @@ customer-init:
       app-name: PASTIS_APP
       level:
       roles:
-        - ROL_GET_PASTIS
+        - ROLE_GET_PASTIS
         - ROLE_GET_ARCHIVE_PROFILES_UNIT
         - ROLE_UPDATE_ARCHIVE_PROFILES_UNIT
         - ROLE_CREATE_ARCHIVE_PROFILES_UNIT
@@ -283,11 +292,16 @@ customer-init:
         - ROLE_UPDATE_TRANSACTIONS
         - ROLE_COLLECT_UPDATE_BULK_ARCHIVE_UNIT
         - ROLE_COLLECT_UPDATE_UNITARY_ARCHIVE_UNIT
+        - ROLE_COLLECT_DELETE_ARCHIVE_UNIT
         - ROLE_GET_SCHEMAS
         - ROLE_GET_ONTOLOGIES
         - ROLE_COLLECT_GET_ARCHIVE_SEARCH
         - ROLE_COLLECT_GET_ARCHIVE_BINARY
         - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_UNITS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_COLLECT_RECLASSIFICATION
 
 
     - name: Archiviste - gestion et collecte
@@ -308,11 +322,16 @@ customer-init:
         - ROLE_UPDATE_TRANSACTIONS
         - ROLE_COLLECT_UPDATE_BULK_ARCHIVE_UNIT
         - ROLE_COLLECT_UPDATE_UNITARY_ARCHIVE_UNIT
+        - ROLE_COLLECT_DELETE_ARCHIVE_UNIT
         - ROLE_GET_SCHEMAS
         - ROLE_GET_ONTOLOGIES
         - ROLE_COLLECT_GET_ARCHIVE_SEARCH
         - ROLE_COLLECT_GET_ARCHIVE_BINARY
         - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_UNITS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_COLLECT_RECLASSIFICATION
 
     - name: Service producteur
       description: Profil de préparation des versements des archives sans possibilité de transmettre les archives au SAE
@@ -333,6 +352,9 @@ customer-init:
         - ROLE_COLLECT_GET_ARCHIVE_SEARCH
         - ROLE_COLLECT_GET_ARCHIVE_BINARY
         - ROLE_GET_FILLING_PLAN_ACCESS
+        - ROLE_GET_UNITS
+        - ROLE_GET_AGENCIES
+        - ROLE_GET_ARCHIVE_PROFILES_UNIT
 
     - name: Profil pour les contrats de gestion
       description: Contrats de gestion
@@ -344,6 +366,16 @@ customer-init:
         - ROLE_UPDATE_MANAGEMENT_CONTRACT
         - ROLE_DELETE_MANAGEMENT_CONTRACT
 
+    - name: Profil pour la consultation des ontologies et gestion des schémas
+      description: Consultation des ontologies et gestion des schémas
+      app-name: ONTOLOGY_APP
+      level:
+      roles:
+        - ROLE_GET_ONTOLOGIES
+        - ROLE_IMPORT_ONTOLOGY
+        - ROLE_IMPORT_SCHEMAS
+        - ROLE_GET_SCHEMAS
+        - ROLE_DELETE_SCHEMAS
 
   # Other Default profiles for admin group
   admin-profiles:

@@ -9,6 +9,7 @@
   enabled: true
   paths:
     - "{{ vitam_defaults.folder.root_path }}/log/{{ cots_service }}/{{ cots_service }}*.log"
+  ignore_older: {{ filebeat.config.ignore_older }}
   fields_under_root: true
   fields:
     kind: log
@@ -28,7 +29,7 @@
         test:
           - '2024-09-30T13:46:37.298+0200'
     - drop_fields:
-        fields: ["date_time"]
+        fields: ["date_time", "message"]
   parsers:
     - multiline:
         type: pattern
