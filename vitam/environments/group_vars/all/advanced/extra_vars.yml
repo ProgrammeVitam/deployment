@@ -18,6 +18,7 @@ vitam:
         secure_cookie: true
         use_proxy_to_clone_tests: "yes"
         elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/ihm-recette/mapping"
+
     library:
         vitam_component: library
         host: "library.service.{{ consul_domain }}"
