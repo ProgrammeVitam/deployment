@@ -38,7 +38,7 @@
     when: avast.repository.gpgcheck | default('no') | bool == true
 
   when:
-    - ansible_os_family == "RedHat"
+    - ansible_os_family in ['RedHat', 'Rocky']
     - avast.manage_repository | default(true) | bool == true
 
 # Debian config
@@ -100,14 +100,7 @@
     owner: avast
     group: avast
     mode: 0640
-
-# VPS is downloaded during the installation of avast package, unless the VPS repository wasn't properly configured.
-# So we need to download it once to properly start avast service.
-- name: Update Avast VPS
-  command: /var/lib/avast/Setup/avast.vpsupdate
-  args:
-    creates: /var/lib/avast/Setup/filedir/vps9.raw
-  notify: restart avast
+  notify: restart avastvps
 
 - name: Create whitelist file
   template:

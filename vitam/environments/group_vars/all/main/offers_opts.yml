@@ -56,7 +56,7 @@ vitam_strategy:
 # WARNING : for offer names, please only use [a-z][a-z0-9-]* pattern
 vitam_offers:
   offer-fs-1:
-    # param can be filesystem-hash (recomended) or filesystem (not recomended)
+    # param can be filesystem-hash (recommended) or filesystem (not recommended)
     provider: filesystem-hash
     ### Optional parameters
     # Offer log compaction
@@ -71,6 +71,9 @@ vitam_offers:
     maxBatchThreadPoolSize: 32
     # Batch metadata computation timeout in seconds
     batchMetadataComputationTimeout: 600
+    # Clean up non-rewritable / non-overridable objects on write errors.
+    # True (default) for fast auto-recovery in most failure cases, but may cause data loses in rare cases of concurrent (re-)writes by other threads. Use at your own risk.
+    cleanupObjectsOnWriteError: true
 ################################################################################
   offer-swift-1:
     # provider : openstack-swift for v1 or openstack-swift-v3 for v3
@@ -96,7 +99,9 @@ vitam_offers:
     swiftConnectionTimeout: 200000
     #Max time (in milliseconds) waiting for a data from the server (socket) (optional, 60000 by default)
     swiftReadTimeout: 60000
-    #Default number of retries on errors
+    # Disable keep-alive. Optional, defaults to false.
+    swiftDisableKeepAlive: false
+    #Default number of (re)tries on errors
     swiftNbRetries: 3
     #Time (in seconds) to renew a token before expiration occurs (blocking) (optional, 60 by default)
     swiftHardRenewTokenDelayBeforeExpireTime: 60
@@ -114,6 +119,9 @@ vitam_offers:
     maxBatchThreadPoolSize: 32
     # Batch metadata computation timeout in seconds
     batchMetadataComputationTimeout: 600
+    # Clean up non-rewritable / non-overridable objects on write errors.
+    # True (default) for fast auto-recovery in most failure cases, but may cause data loses in rare cases of concurrent (re-)writes by other threads. Use at your own risk.
+    cleanupObjectsOnWriteError: true
     # Enable / Disable use of vitam custom headers for offer requests
     enableCustomHeaders: false
     # List of vitam custom headers used by offer requests
@@ -145,6 +153,14 @@ vitam_offers:
     s3RequestTimeout: 0
     # s3ClientExecutionTimeout (optional): Max time (in milliseconds) for a request by java client (0 by default, disabled)
     s3ClientExecutionTimeout: 0
+    # Disable multipart upload of large objects (legacy mode / not recommended, only for S3 servers without multipart upload support)
+    s3DisableMultipartUpload: false
+    # Max upload size for single object upload size in MB (min: 5 MB, max: 5 GB, default: 5 GB)
+    s3MaxUploadPartSizeMB: 5_120
+    # Nb retries for S3 multipart upload cleanup
+    s3MultiPartCleanNbRetries: 3
+    # Wait delay for S3 multipart upload cleanup (in milliseconds)
+    s3MultiPartCleanWaitingTimeInMilliseconds: 10_000
     # Offer log compaction
     offer_log_compaction:
       ## Expiration, here offer logs 21 days old will be compacted
@@ -157,6 +173,9 @@ vitam_offers:
     maxBatchThreadPoolSize: 32
     # Batch metadata computation timeout in seconds
     batchMetadataComputationTimeout: 600
+    # Clean up non-rewritable / non-overridable objects on write errors.
+    # True (default) for fast auto-recovery in most failure cases, but may cause data loses in rare cases of concurrent (re-)writes by other threads. Use at your own risk.
+    cleanupObjectsOnWriteError: true
 ################################################################################
   offer-tape-1:
     provider: tape-library
@@ -178,6 +197,9 @@ vitam_offers:
     maxBatchThreadPoolSize: 32
     # Batch metadata computation timeout in seconds
     batchMetadataComputationTimeout: 600
+    # Clean up non-rewritable / non-overridable objects on write errors.
+    # True (default) for fast auto-recovery in most failure cases, but may cause data loses in rare cases of concurrent (re-)writes by other threads. Use at your own risk.
+    cleanupObjectsOnWriteError: true
 ################################################################################
   # WARNING: Swift V1 is deprecated
   # example_swift_v1:
@@ -208,6 +230,7 @@ vitam_offers:
   #    swiftMaxConnections: 1000
   #    swiftConnectionTimeout: 200000
   #    swiftReadTimeout: 60000
+  #    swiftDisableKeepAlive: false
   #    Time (in seconds) to renew a token before expiration occurs
   #    swiftHardRenewTokenDelayBeforeExpireTime: 60
   #    swiftSoftRenewTokenDelayBeforeExpireTime: 300

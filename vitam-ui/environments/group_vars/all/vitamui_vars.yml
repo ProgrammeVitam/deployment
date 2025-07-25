@@ -1,4 +1,10 @@
 ---
+
+# VitamUI deployment mode. Allowed values are :
+# - "prod" (default): Enforces additional security checks.
+# - "dev" (NOT for sensitive / production environments): Ignoring additional security checks.
+deployment_mode: prod
+
 single_vm_hostnames: [ "localhost" ]
 
 pki_dir: "{{ inventory_dir }}/certs"
@@ -15,8 +21,15 @@ vitamui_defaults:
     vitamuidb: "vitamuidb"
     group: "vitamui"
   services:
+    ### Temporary parameters for migration
+    # In case of minor upgrade of vitam-ui 7.1.x or 8.1.x without PKI update, set "ssl_hostname_verification" to false
+    # in order to disable HTTPS certificate hostname verification (non-recommended).
+    # See migration documentation for more information.
+    ssl_hostname_verification: true
     ### The following values can be overwritten for each components in vitamui: parameters.
     start_timeout: 300
+    status_retries_number: 60
+    status_retries_delay: 5
     at_boot: false
     secure: true
     jvm_log: false
@@ -89,7 +102,7 @@ vitamui:
 
   # Applications
   api_gateway:
-    host: "api-gateway.service.{{ consul_domain }}"
+    host: "vitamui-api-gateway.service.{{ consul_domain }}"
     vitamui_component: api-gateway
     port_service: 8090
     port_admin: 7090
@@ -127,7 +140,7 @@ vitamui:
     write_timeout: 30
 
   cas_server:
-    host: "cas-server.service.{{ consul_domain }}"
+    host: "vitamui-cas-server.service.{{ consul_domain }}"
     vitamui_component: cas-server
     port_service: 8001
     port_admin: 7001
