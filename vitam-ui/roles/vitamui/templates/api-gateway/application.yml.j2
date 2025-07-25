@@ -24,11 +24,11 @@ management:
       enabled: false
 
 authn:
-  client-certificate-header-name: x-ssl-cert
+  client-certificate-header-name: {{ vitamui.api_gateway.client_certificate_header_name | default('x-ssl-cert') }}
 
 spring:
   application:
-    name: gateway-server
+    name: vitamui-{{ vitamui_struct.vitamui_component }}
   cloud:
     config:
       enabled: false
@@ -36,7 +36,7 @@ spring:
       enabled: true
       host: {{ hostvars[inventory_hostname][consul.network] if (inventory_hostname in groups['hosts_vitamui_consul_server'] or inventory_hostname in groups['hosts_consul_server']) else 'localhost' }}
       discovery:
-        serviceName: gateway-server
+        serviceName: vitamui-{{ vitamui_struct.vitamui_component }}
         preferIpAddress: true
         healthCheckUrl: http://${management.server.address}:${management.server.port}/actuator/health
         tags: {{ consul_tags }}
@@ -45,7 +45,10 @@ spring:
       httpclient:
         wiretap: false
         ssl:
-          use-insecure-trust-manager: true
+          trustedX509Certificates:
+{% for cert_file in copied_cert_files %}
+          - {{ vitamui_folder_conf }}/{{ cert_file }}
+{% endfor %}
       httpserver:
         wiretap: false
       globalcors:

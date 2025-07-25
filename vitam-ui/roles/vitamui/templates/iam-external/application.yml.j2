@@ -66,7 +66,7 @@ iam-external:
       truststore:
         key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
         key-password: {{ password_truststore }}
-      hostname-verification: false
+      hostname-verification: {{ vitamui_defaults.services.ssl_hostname_verification | default(true) | bool }}
 {% endif %}
   iam-internal-client:
     server-host: {{ vitamui.iam_internal.host }}
@@ -80,23 +80,10 @@ iam-external:
       truststore:
         key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
         key-password: {{ password_truststore }}
-      hostname-verification: false
+      hostname-verification: {{ vitamui_defaults.services.ssl_hostname_verification | default(true) | bool }}
 {% endif %}
 
 customer.init.config.file: {{ vitamui_folder_conf }}/customer-init.yml
-
-list-enable-external-identifiers:
-  tenants:
-{% if vitam_vars.functional_administration.vitam_tenants_usage_external is iterable %}
-{% for tenant in vitam_vars.functional_administration.vitam_tenants_usage_external %}
-{% if tenant.identifiers is defined %}
-    {{ tenant.name }}:
-{% for external in tenant.identifiers %}
-      - {{ external }}
-{% endfor %}
-{% endif %}
-{% endfor %}
-{% endif %}
 
 cas:
 {% if vitamui.cas_server.base_url is defined %}

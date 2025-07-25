@@ -42,6 +42,8 @@ server:
       file-date-format: ".yyyy-MM-dd"
       suffix: ".log"
 
+cas.tenant.identifier: {{ vitamui_platform_informations.cas_tenant }}
+
 management:
   server:
     address: {{ ip_admin }}
@@ -59,7 +61,7 @@ clients:
       truststore:
         key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
         key-password: {{ password_truststore }}
-      hostname-verification: false
+      hostname-verification: {{ vitamui_defaults.services.ssl_hostname_verification | default(true) | bool }}
 {% endif %}
 
 {% if opentracing.jaeger.enabled | default(false) | bool %}

@@ -48,7 +48,7 @@ management:
     port: {{ vitamui_struct.port_admin }}
     ssl:
       enabled: false
-
+cas.tenant.identifier: {{ vitamui_platform_informations.cas_tenant }}
 clients:
   iam-internal:
     server-host: {{ vitamui.iam_internal.host }}
@@ -59,7 +59,7 @@ clients:
       truststore:
         key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
         key-password: {{ password_truststore }}
-      hostname-verification: false
+      hostname-verification: {{ vitamui_defaults.services.ssl_hostname_verification | default(true) | bool }}
 {% endif %}
 
 {% if opentracing.jaeger.enabled | default(false) | bool %}
