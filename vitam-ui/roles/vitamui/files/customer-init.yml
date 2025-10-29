@@ -280,10 +280,14 @@ customer-init:
       roles:
         - ROLE_GET_PROJECTS
         - ROLE_CREATE_PROJECTS
-        - ROLE_UPDATE_PROJECTS
+        - ROLE_UPDATE_PROJECTS_DESCRIPTION
+        - ROLE_UPDATE_PROJECTS_CONTEXT
+        - ROLE_UPDATE_PROJECTS_ATTACHMENT
+        - ROLE_UPDATE_PROJECTS_CONFIG
         - ROLE_GET_ACCESS_CONTRACTS
         - ROLE_GET_RULES
         - ROLE_SEND_TRANSACTIONS
+        - ROLE_DOWNLOAD_SIP_TRANSACTIONS
         - ROLE_CLOSE_TRANSACTIONS
         - ROLE_REOPEN_TRANSACTIONS
         - ROLE_ABORT_TRANSACTIONS
@@ -302,6 +306,10 @@ customer-init:
         - ROLE_GET_AGENCIES
         - ROLE_GET_ARCHIVE_PROFILES_UNIT
         - ROLE_COLLECT_RECLASSIFICATION
+        - ROLE_GET_EXTERNAL_REFERENTIAL_CONFIG
+        - ROLE_GET_EXTERNAL_REFERENTIAL_AGENCIES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_ARCHIVE_PROFILES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_INGEST_CONTRACTS
 
 
     - name: Archiviste - gestion et collecte
@@ -311,10 +319,13 @@ customer-init:
       roles:
         - ROLE_GET_PROJECTS
         - ROLE_CREATE_PROJECTS
-        - ROLE_UPDATE_PROJECTS
+        - ROLE_UPDATE_PROJECTS_DESCRIPTION
+        - ROLE_UPDATE_PROJECTS_CONTEXT
+        - ROLE_UPDATE_PROJECTS_ATTACHMENT
         - ROLE_GET_ACCESS_CONTRACTS
         - ROLE_GET_RULES
         - ROLE_SEND_TRANSACTIONS
+        - ROLE_DOWNLOAD_SIP_TRANSACTIONS
         - ROLE_CLOSE_TRANSACTIONS
         - ROLE_REOPEN_TRANSACTIONS
         - ROLE_GET_TRANSACTIONS
@@ -332,6 +343,10 @@ customer-init:
         - ROLE_GET_AGENCIES
         - ROLE_GET_ARCHIVE_PROFILES_UNIT
         - ROLE_COLLECT_RECLASSIFICATION
+        - ROLE_GET_EXTERNAL_REFERENTIAL_CONFIG
+        - ROLE_GET_EXTERNAL_REFERENTIAL_AGENCIES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_ARCHIVE_PROFILES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_INGEST_CONTRACTS
 
     - name: Service producteur
       description: Profil de préparation des versements des archives sans possibilité de transmettre les archives au SAE
@@ -340,12 +355,13 @@ customer-init:
       roles:
         - ROLE_GET_PROJECTS
         - ROLE_CREATE_PROJECTS
-        - ROLE_UPDATE_PROJECTS
+        - ROLE_UPDATE_PROJECTS_DESCRIPTION
         - ROLE_GET_ACCESS_CONTRACTS
         - ROLE_GET_RULES
         - ROLE_GET_TRANSACTIONS
         - ROLE_CREATE_TRANSACTIONS
         - ROLE_CLOSE_TRANSACTIONS
+        - ROLE_UPDATE_TRANSACTIONS
         - ROLE_COLLECT_UPDATE_UNITARY_ARCHIVE_UNIT
         - ROLE_GET_SCHEMAS
         - ROLE_GET_ONTOLOGIES
@@ -355,6 +371,10 @@ customer-init:
         - ROLE_GET_UNITS
         - ROLE_GET_AGENCIES
         - ROLE_GET_ARCHIVE_PROFILES_UNIT
+        - ROLE_GET_EXTERNAL_REFERENTIAL_CONFIG
+        - ROLE_GET_EXTERNAL_REFERENTIAL_AGENCIES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_ARCHIVE_PROFILES
+        - ROLE_GET_EXTERNAL_REFERENTIAL_INGEST_CONTRACTS
 
     - name: Profil pour les contrats de gestion
       description: Contrats de gestion
@@ -372,10 +392,18 @@ customer-init:
       level:
       roles:
         - ROLE_GET_ONTOLOGIES
-        - ROLE_IMPORT_ONTOLOGY
+        - ROLE_IMPORT_ONTOLOGIES
         - ROLE_IMPORT_SCHEMAS
         - ROLE_GET_SCHEMAS
         - ROLE_DELETE_SCHEMAS
+
+    - name: Ontologie - lecture seule
+      description: Profil pour la consultation des ontologies et schémas dans Vitam, en lecture seule
+      app-name: ONTOLOGY_APP
+      level:
+      roles:
+        - ROLE_GET_ONTOLOGIES
+        - ROLE_GET_SCHEMAS
 
   # Other Default profiles for admin group
   admin-profiles:

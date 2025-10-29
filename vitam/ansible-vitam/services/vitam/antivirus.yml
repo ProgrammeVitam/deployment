@@ -1,0 +1,10 @@
+---
+
+- hosts: hosts_ingest_external:hosts_worker
+  any_errors_fatal: true
+  roles:
+    - antivirus
+    - vitam
+  vars:
+    vitam_struct: "{{ vitam.antivirus }}"
+  tags: antivirus

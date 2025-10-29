@@ -7,6 +7,7 @@ spring:
       discovery:
         serviceName: vitamui-{{ vitamui_struct.vitamui_component }}
         preferIpAddress: true
+        ipAddress: ${server.address}
         healthCheckUrl: http://${management.server.address}:${management.server.port}/actuator/health
         tags: {{ consul_tags }}
         instanceId: {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
@@ -41,7 +42,7 @@ server:
 
   error:
     path: /error
-  max-http-header-size: {{ vitamui_struct.server_max_http_header_size | default('10KB') }}
+  max-http-request-header-size: {{ vitamui_struct.server_max_http_header_size | default('10KB') }}
   tomcat:
     accesslog:
       enabled: {{ vitamui_struct.accesslogs | default(accesslogs) | lower }}
