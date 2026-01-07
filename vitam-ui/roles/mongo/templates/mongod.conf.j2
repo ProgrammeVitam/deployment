@@ -8,8 +8,12 @@
 {% if install_mode != 'container' %}
 systemLog:
   destination: file
+  syslogFacility: local0
+  verbosity: {{ mongodb.verbosity | default(0) }}
+  traceAllExceptions: {{ mongodb.trace_all_exceptions | default('false') }}
   logAppend: true
-  path: {{ vitamui_defaults.folder.root_path | default('/vitamui') }}/log/mongod/mongod.log
+  logRotate: reopen
+  path: {{ mongo_folder_log }}/mongod.log
 {% endif %}
 
 # Where and how to store data.
@@ -33,6 +37,10 @@ net:
     enabled: true
     pathPrefix: {{ mongo_tmp_path }}
     filePermissions: 0700
+
+  # Mitigate CVE-2025-14847 ("MongoBleed") by disabling zlib compressor
+  compression:
+    compressors: snappy,zstd
 
 # operationProfiling:
 replication:
