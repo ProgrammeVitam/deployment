@@ -116,7 +116,6 @@ large-app-vm-2
 
 [hosts_scheduler]
 large-app-vm-3
-large-app-vm-4
 
 [hosts_processing]
 large-app-vm-8
@@ -281,7 +280,7 @@ primary_site=true
 # ===============================
 
 ### vitam-itest repository ###
-vitam_tests_branch=master_2.1.x
+vitam_tests_branch=master
 vitam_tests_gitrepo_protocol=https
 vitam_tests_gitrepo_baseurl=github.com
 vitam_tests_gitrepo_url={{ vitam_tests_gitrepo_protocol }}://{{ vitam_tests_gitrepo_baseurl }}/ProgrammeVitam/vitam-itests.git
