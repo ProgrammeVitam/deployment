@@ -53,3 +53,14 @@ db.TraceabilityReport.createIndex( { "processId" : 1, "_tenant" : 1 } )
 
 // Create indexes TraceabilityReport
 db.UpdateUnitReport.createIndex( { "processId" : 1, "_tenant" : 1 } )
+
+
+// Create index for ReassignmentChildObjectGroupReport
+db.ReassignmentChildObjectGroupReport.createIndex( { "processId" : 1, "_tenant" : 1, "_metadata.id" : 1 } )
+
+// Create index for ReassignmentObjectGroupReport
+db.ReassignmentObjectGroupReport.createIndex( { "processId" : 1, "_tenant" : 1, "_metadata.id" : 1} )
+
+// Create index for ReassignmentChildObjectGroupReport
+db.ReassignmentChildObjectGroupReport.createIndex( { "processId" : 1, "_tenant" : 1, "_metadata.id" : 1} )
+

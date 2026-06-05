@@ -1,5 +1,5 @@
 # Module: logstash
-# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.17/filebeat-module-logstash.html
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/8.18/filebeat-module-logstash.html
 
 - module: logstash
   log:
@@ -7,6 +7,8 @@
     var.paths:
       - "{{ vitamui_defaults.folder.root_path }}/log/logstash/logstash-plain.log"
     input:
+      type: filestream
+      id: {{ vitamui_site_name }}-logstash-log
       fields_under_root: true
       fields:
         kind: log
@@ -20,12 +22,13 @@
             trim_values: all
         - timestamp:
             field: date_time
+            timezone: {{ filebeat.timezone | default('Europe/Paris') }}
             layouts:
               - '2006-01-02T15:04:05,000'
             test:
               - '2024-09-30T14:51:17,100'
         - drop_fields:
-            fields: ["date_time"]
+            fields: ["date_time", "message", "fileset", "service"]
 
   slowlog:
     enabled: false

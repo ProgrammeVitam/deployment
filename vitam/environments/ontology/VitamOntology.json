@@ -2845,7 +2845,8 @@
     "ShortName": "Date",
     "Collections": [
       "LogbookOperation",
-      "Unit"
+      "Unit",
+      "ObjectGroup"
     ]
   },
   {
@@ -2889,7 +2890,9 @@
     "Origin": "INTERNAL",
     "ShortName": "Identifiant du processus",
     "Collections": [
-      "LogbookOperation"
+      "LogbookOperation",
+      "Unit",
+      "ObjectGroup"
     ]
   },
   {
@@ -3500,7 +3503,8 @@
     "Origin": "INTERNAL",
     "ShortName": "OperationId",
     "Collections": [
-      "Unit"
+      "Unit",
+      "ObjectGroup"
     ]
   },
   {
@@ -3717,6 +3721,18 @@
     "StringSize": "MEDIUM",
     "Origin": "INTERNAL",
     "ShortName": "Métadonnées à extraire dans les unités archivistiques",
+    "Collections": [
+      "PreservationScenario"
+    ]
+  },
+  {
+    "Identifier": "TransformationRules",
+    "Description": "Mapping : preservationscenario-es-mapping.json",
+    "Type": "KEYWORD",
+    "TypeDetail": "STRING",
+    "StringSize": "MEDIUM",
+    "Origin": "INTERNAL",
+    "ShortName": "Fichier jstl pour la préservation",
     "Collections": [
       "PreservationScenario"
     ]
@@ -4479,6 +4495,49 @@
     "ShortName": "Arborescence virtuelle",
     "Collections": [
       "Unit"
+    ]
+  },
+  {
+    "Identifier": "SourceOriginatingAgency",
+    "ApiField": "SourceOriginatingAgency",
+    "Description": "Identifiant du service producteur source avant réattribution",
+    "Type": "KEYWORD",
+    "TypeDetail": "STRING",
+    "StringSize": "MEDIUM",
+    "Origin": "INTERNAL",
+    "ShortName": "Service producteur source",
+    "Collections": [
+      "Unit",
+      "ObjectGroup",
+      "AccessionRegisterDetail"
+    ]
+  },
+  {
+    "Identifier": "TargetOriginatingAgency",
+    "ApiField": "TargetOriginatingAgency",
+    "Description": "Identifiant du service producteur cible après réattribution",
+    "Type": "KEYWORD",
+    "TypeDetail": "STRING",
+    "StringSize": "MEDIUM",
+    "Origin": "INTERNAL",
+    "ShortName": "Service producteur cible",
+    "Collections": [
+      "Unit",
+      "ObjectGroup",
+      "AccessionRegisterDetail"
+    ]
+  },
+  {
+    "Identifier": "ReassignmentDate",
+    "ApiField": "ReassignmentDate",
+    "Description": "Date de réattribution de service producteur",
+    "Type": "DATE",
+    "TypeDetail": "DATETIME",
+    "Origin": "INTERNAL",
+    "ShortName": "Date de réattribution de service producteur",
+    "Collections": [
+      "Unit",
+      "ObjectGroup"
     ]
   }
 ]

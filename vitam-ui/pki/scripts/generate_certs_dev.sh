@@ -12,55 +12,55 @@ set -e
 ######################################################################
 
 REPERTOIRE_ROOT="$( cd "$( readlink -f $(dirname ${BASH_SOURCE[0]}) )/../../../dev-deployment" ; pwd )"
+DEV_MODE="true"
 
-function getHostCertificateCn {
+function getComponentCertificateCn {
     echo "dev.vitamui.com"
 }
 
-function getHostCertificateSan {
+function getComponentCertificateSan {
     echo "DNS:dev.vitamui.com,DNS:localhost"
 }
 
 function generateCerts {
 
-    # Copy CA
-    pki_logger "Recopie des clés publiques des CA"
-    copyCAFromPki client-external
-    copyCAFromPki client-vitam
-    copyCAFromPki server
+    pki_logger "Copying CA certificates"
+    for AUTHORITY_NAME in $(get_autorities); do
+        copyCAFromPki "${AUTHORITY_NAME}"
+    done
 
-    # Generate hosts certificates
-    pki_logger "Génération des certificats serveurs"
-    # Zone interne
-    generateHostCertAndStorePassphrase          security            hosts_vitamui_security
-    #Zone externe
-    generateHostCertAndStorePassphrase          iam                 hosts_vitamui_iam
-    generateHostCertAndStorePassphrase          cas-server          hosts_cas_server
-    generateHostCertAndStorePassphrase          referential         hosts_vitamui_referential
-    generateHostCertAndStorePassphrase          ingest              hosts_vitamui_ingest
-    generateHostCertAndStorePassphrase          archive-search      hosts_vitamui_archive_search
-    generateHostCertAndStorePassphrase          collect             hosts_vitamui_collect
-    generateHostCertAndStorePassphrase          pastis              hosts_vitamui_pastis
-    generateHostCertAndStorePassphrase          api-gateway         hosts_vitamui_api_gateway
-    #Zone UI
-    generateHostCertAndStorePassphrase          ui-portal           hosts_ui_portal
-    generateHostCertAndStorePassphrase          ui-identity         hosts_ui_identity
-    generateHostCertAndStorePassphrase          ui-identity-admin   hosts_ui_identity_admin
-    generateHostCertAndStorePassphrase          ui-referential      hosts_ui_referential
-    generateHostCertAndStorePassphrase          ui-ingest           hosts_ui_ingest
-    generateHostCertAndStorePassphrase          ui-archive-search   hosts_ui_archive_search
-    generateHostCertAndStorePassphrase          ui-pastis           hosts_ui_pastis
-    generateHostCertAndStorePassphrase          ui-collect          hosts_ui_collect
-    generateHostCertAndStorePassphrase          ui-design-system    hosts_ui_design_system
+    # VitamUI Services
+    # Server Only for https
+    generateServerCertAndStorePassphrase          vitamui-services security
 
-    #Reverse
-    generateHostCertAndStorePassphrase          reverse             hosts_vitamui_reverseproxy
+    # Server and Client for https or mTLS
+    generateServerAndClientCertAndStorePassphrase vitamui-services iam
+    generateServerAndClientCertAndStorePassphrase vitamui-services cas-server
+    generateServerAndClientCertAndStorePassphrase vitamui-services referential
+    generateServerAndClientCertAndStorePassphrase vitamui-services ingest
+    generateServerAndClientCertAndStorePassphrase vitamui-services archive-search
+    generateServerAndClientCertAndStorePassphrase vitamui-services collect
+    generateServerAndClientCertAndStorePassphrase vitamui-services pastis
+    generateServerAndClientCertAndStorePassphrase vitamui-services api-gateway
 
-    # Example of generated client cert for a customer allowing to perform request on external APIs
-    generateClientCertAndStorePassphrase        customer_x          client-external
+    # Zone UI - Client Only for mTLS
+    generateClientCertAndStorePassphrase          vitamui-services ui-portal
+    generateClientCertAndStorePassphrase          vitamui-services ui-identity
+    generateClientCertAndStorePassphrase          vitamui-services ui-identity-admin
+    generateClientCertAndStorePassphrase          vitamui-services ui-referential
+    generateClientCertAndStorePassphrase          vitamui-services ui-ingest
+    generateClientCertAndStorePassphrase          vitamui-services ui-archive-search
+    generateClientCertAndStorePassphrase          vitamui-services ui-pastis
+    generateClientCertAndStorePassphrase          vitamui-services ui-collect
+
+    # Reverse proxy - Server Only for https
+    generateServerCertAndStorePassphrase          vitamui-services reverse
 
     # Generate Vitam certificates for VitamUI
-    generateClientCertAndStorePassphrase        vitamui             client-vitam
+    generateClientCertAndStorePassphrase          client-vitam     vitamui
+
+    # Example of generated client cert for a customer allowing to perform request on external APIs
+    generateClientCertAndStorePassphrase          client-external  customer_x
 }
 
 ######################################################################

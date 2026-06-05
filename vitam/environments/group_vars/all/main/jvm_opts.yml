@@ -12,32 +12,32 @@
 
 ### Specific configuration for each components
 vitam:
-    accessinternal:
+    access_internal:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    accessexternal:
+    access_external:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    elastickibanainterceptor:
+    elastic_kibana_interceptor:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    batchreport:
-          jvm_opts:
-              # memory: "-Xms128m -Xmx512m"
-              # gc: ""
-              # java: ""
-    ingestinternal:
+    batch_report:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    ingestexternal:
+    ingest_internal:
+        jvm_opts:
+            # memory: "-Xms128m -Xmx512m"
+            # gc: ""
+            # java: ""
+    ingest_external:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
@@ -77,12 +77,12 @@ vitam:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    storageengine:
+    storage:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
-    storageofferdefault:
+    offer:
         jvm_opts:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
@@ -132,3 +132,8 @@ vitam:
             # memory: "-Xms128m -Xmx512m"
             # gc: ""
             # java: ""
+    ina_tape_proxy:
+        jvm_opts:
+          # memory: "-Xms128m -Xmx512m"
+          # gc: ""
+          # java: ""

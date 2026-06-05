@@ -6,17 +6,14 @@ vitam:
         host: "ihm-recette.service.{{ consul_domain }}"
         port_service: 8445
         port_admin: 28204
-        baseurl: /ihm-recette
         static_content: "{{ vitam_defaults.folder.root_path }}/app/ihm-recette"
-        baseuri: "ihm-recette"
+        baseuri: ihm-recette
         secure_mode:
-            - authc
+            - authc # (default) -> Will use the vitam_users defined in environments/group_vars/all/main/vault-vitam.yml
+            # - x509
         https_enabled: true
-        secret_platform: "false"
+        secret_platform: false
         cluster_name: "{{ elasticsearch.data.cluster_name }}"
-        session_timeout: 1800000
-        secure_cookie: true
-        use_proxy_to_clone_tests: "yes"
         elasticsearch_mapping_dir: "{{ vitam_defaults.folder.root_path }}/conf/ihm-recette/mapping"
 
     library:
@@ -24,26 +21,13 @@ vitam:
         host: "library.service.{{ consul_domain }}"
         port_service: 8090
         port_admin: 28090
-        baseuri: "doc"
+        baseuri: doc
         https_enabled: false
-        secret_platform: "false"
+        secret_platform: false
         consul_business_check: 30 # value in seconds
         consul_admin_check: 30 # value in seconds
 
-tenant_to_clean_before_tnr: ["0","1"]
-
-# Period units in seconds
-metricbeat:
-    enabled: false
-    system:
-        period: 10
-    mongodb:
-        period: 10
-    elasticsearch:
-        period: 10
-
-packetbeat:
-    enabled: false
+tenant_to_clean_before_tnr: [0, 1]
 
 browser:
     enabled: false
@@ -57,5 +41,4 @@ docker_opts:
     # docker_address_pools_cidr: 192.168.192.1/18
     # docker_address_pools_size: 24
 
-gatling_install: false
 docker_install: false # whether or not install docker & docker images

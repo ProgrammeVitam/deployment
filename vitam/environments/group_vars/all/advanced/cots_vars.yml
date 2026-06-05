@@ -15,11 +15,11 @@ consul:
 elasticsearch:
     log:
         host: "elasticsearch-log.service.{{ consul_domain }}"
-        port_http: "9201"
+        port_http: 9201
         at_boot: true
-        groupe: "log"
-        baseuri: "elasticsearch-log"
-        cluster_name: "elasticsearch-log"
+        groupe: log
+        baseuri: elasticsearch-log
+        cluster_name: elasticsearch-log
         consul_check_http: 10 # in seconds
         consul_check_tcp: 10 # in seconds
         action_log_level: error
@@ -30,18 +30,18 @@ elasticsearch:
         # log configuration
         log_appenders:
             root:
-                log_level: "info"
+                log_level: info
             rolling:
                 max_log_file_size: "10MB"
                 max_total_log_size: "2GB"
             deprecation_rolling:
                 max_log_file_size: "10MB"
-                max_files: "20"
-                log_level: "warn"
+                max_files: 20
+                log_level: warn
             index_search_slowlog_rolling:
-                log_level: "warn"
+                log_level: warn
             index_indexing_slowlog_rolling:
-                log_level: "warn"
+                log_level: warn
         # By default, is commented. Should be uncommented if ansible computes badly vCPUs number ;  values are associated vCPUs numbers ; please adapt to your configuration
         # thread_pool:
         #     index:
@@ -58,13 +58,13 @@ elasticsearch:
         host: "elasticsearch-data.service.{{ consul_domain }}"
         # default is 0.1 (10%) and should be quite enough in most cases
         #index_buffer_size_ratio: "0.15"
-        port_http: "9200"
-        groupe: "data"
-        baseuri: "elasticsearch-data"
-        cluster_name: "elasticsearch-data"
+        port_http: 9200
+        groupe: data
+        baseuri: elasticsearch-data
+        cluster_name: elasticsearch-data
         consul_check_http: 10 # in seconds
         consul_check_tcp: 10 # in seconds
-        action_log_level: debug
+        action_log_level: warn
         https_enabled: false
         indices_fielddata_cache_size: '30%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/8.13/modules-fielddata.html
         indices_breaker_fielddata_limit: '40%' # related to https://www.elastic.co/guide/en/elasticsearch/reference/8.13/circuit-breaker.html#fielddata-circuit-breaker
@@ -72,18 +72,18 @@ elasticsearch:
         # log configuration
         log_appenders:
             root:
-                log_level: "info"
+                log_level: info
             rolling:
                 max_log_file_size: "10MB"
                 max_total_log_size: "5GB"
             deprecation_rolling:
                 max_log_file_size: "10MB"
-                max_files: "20"
-                log_level: "warn"
+                max_files: 20
+                log_level: warn
             index_search_slowlog_rolling:
-                log_level: "warn"
+                log_level: warn
             index_indexing_slowlog_rolling:
-                log_level: "warn"
+                log_level: warn
         # By default, is commented. Should be uncommented if ansible computes badly vCPUs number ;  values are associated vCPUs numbers ; please adapt to your configuration
         # thread_pool:
         #     index:
@@ -101,9 +101,9 @@ mongodb:
     mongos_port: 27017
     mongoc_port: 27018
     mongod_port: 27019
-    mongo_authentication: "true"
+    mongo_authentication: true
     check_consul: 10 # in seconds
-    drop_info_log: false # Drop mongo (I)nformational log, for Verbosity Level of 0
+    drop_info_log: true # Drop mongo (I)nformational log, for Verbosity Level of 0
     # logs configuration
     logrotate: enabled # or disabled
     history_days: 30 # How many days to store logs if logrotate is set to 'enabled'
@@ -128,12 +128,19 @@ logstash:
 
 filebeat:
     at_boot: true
+    # processors:
+    #     # https://www.elastic.co/docs/reference/beats/filebeat/add-host-metadata
+    #     - add_host_metadata:
+    #         when.not.contains.tags: forwarded
+    #     # https://www.elastic.co/guide/en/beats/filebeat/current/add-cloud-metadata
+    #     - add_cloud_metadata: ~
+    #     # https://www.elastic.co/docs/reference/beats/filebeat/add-docker-metadata
+    #     - add_docker_metadata: ~
 
 # Prometheus params
 prometheus:
     metrics_path: /admin/v1/metrics
     check_consul: 10 # in seconds
-    prometheus_config_file_target_directory: # Set path where "prometheus.yml" file will be generated. Example: /tmp/
     server:
         port: 9090
         at_boot: true
@@ -144,20 +151,19 @@ prometheus:
         port: 9101
         at_boot: true
         metrics_path: /metrics
-        log_level: "warn"
+        log_level: warn
         logrotate: enabled # or disabled
         history_days: 30 # How many days to store logs if logrotate is set to 'enabled'
     consul_exporter:
         enabled: true
         port: 9107
         at_boot: true
-        metrics_path: /metrics
     elasticsearch_exporter:
         enabled: true
         port: 9114
         at_boot: true
         metrics_path: /metrics
-        log_level: "warn"
+        log_level: warn
         logrotate: enabled # or disabled
         history_days: 30 # How many days to store logs if logrotate is set to 'enabled'
     alertmanager:
@@ -193,47 +199,28 @@ grafana:
 # Curator units: days
 curator:
     at_boot: true
-    indices:
-        metricbeat:
-            close: 5
-            delete: 10
-        packetbeat:
-            close: 5
-            delete: 10
 
 kibana:
-    header_value: "reporting"
     import_delay: 10
     import_retries: 10
     # logs configuration
     logrotate: enabled # or disabled
     history_days: 30 # How many days to store logs if logrotate is set to 'enabled'
     log:
-        baseuri: "kibana_log"
+        baseuri: kibana_log
         api_call_timeout: 120
-        groupe: "log"
+        groupe: log
         port: 5601
         at_boot: true
-        default_index_pattern: "logstash-vitam*"
+        default_index_pattern: logstash-vitam*
         check_consul: 10 # in seconds
-        # default shards & replica
-        shards: 1
-        replica: 1
-        # pour index logstash-*
-        metrics:
-            shards: 1
-            replica: 1
-        # pour index metricbeat-*
-        metricbeat:
-            shards: 3 # must be a factor of 30
-            replica: 1
     data:
-        baseuri: "kibana_data"
+        baseuri: kibana_data
         # OMA : bugdette : api_call_timeout is used for retries ; should ceate a separate variable rather than this one
         api_call_timeout: 120
-        groupe: "data"
+        groupe: data
         port: 5601
-        default_index_pattern: "logbookoperation_*"
+        default_index_pattern: logbookoperation_*
         check_consul: 10 # in seconds
         # index template for .kibana
         shards: 1
@@ -241,13 +228,10 @@ kibana:
 
 syslog:
     # value can be syslog-ng, rsyslog or filebeat (default)
-    name: "filebeat"
-
-# filebeat:
-# Default values are under ansible-vitam/roles/filebeat/defaults/main.yml
+    name: filebeat
 
 cerebro:
-    baseuri: "cerebro"
+    baseuri: cerebro
     port: 9000
     check_consul: 10 # in seconds
     # logs configuration
@@ -267,7 +251,7 @@ clamav:
         # frequency freshclam for database update per day (from 0 to 24 - 24 meaning hourly check)
         db_update_periodicity: 1
         private_mirror_address:
-        use_proxy: "no"
+        use_proxy: false
 
 ## Avast Business Antivirus for Linux
 ## if undefined, the following default values are applied.
@@ -280,7 +264,7 @@ clamav:
 #         state: present
 #         # For RedHat family
 #         baseurl: https://repo.avcdn.net/linux-av/rpm/el9/release
-#         gpgcheck: no
+#         gpgcheck: false
 #         proxy: _none_
 #         # For Debian family
 #         baseurl: 'deb https://repo.avcdn.net/linux-av/deb debian-bookworm release'
@@ -291,22 +275,23 @@ clamav:
 #         - yyyyyy
 
 mongo_express:
-    baseuri: "mongo-express"
+    baseuri: mongo-express
 
-ldap_authentification:
-    ldap_protocol: "ldap"
-    ldap_server: "{% if groups['ldap']|length > 0 %}{{ groups['ldap']|first }}{% endif %}"
-    ldap_port: "389"
-    ldap_base: "dc=programmevitam,dc=fr"
-    ldap_login: "cn=Manager,dc=programmevitam,dc=fr"
-    uid_field: "uid"
-    ldap_userDn_Template: "uid={0},ou=people,dc=programmevitam,dc=fr"
-    ldap_group_request: "(&(objectClass=groupOfNames)(member={0}))"
-    ldap_admin_group: "cn=admin,ou=groups,dc=programmevitam, dc=fr"
-    ldap_user_group: "cn=user,ou=groups,dc=programmevitam, dc=fr"
-    ldap_guest_group: "cn=guest,ou=groups,dc=programmevitam, dc=fr"
+## Mandatory LDAP authentification params when vitam.ihm-demo.authentication_realms: ['ldapRealm'] is set
+# ldap_authentification:
+#     ldap_protocol: "ldap"
+#     ldap_server: "my_ldap_server.domain"
+#     ldap_port: "389"
+#     ldap_base: "dc=programmevitam,dc=fr"
+#     ldap_login: "cn=Manager,dc=programmevitam,dc=fr"
+#     uid_field: "uid"
+#     ldap_userDn_Template: "uid={0},ou=people,dc=programmevitam,dc=fr"
+#     ldap_group_request: "(&(objectClass=groupOfNames)(member={0}))"
+#     ldap_admin_group: "cn=admin,ou=groups,dc=programmevitam, dc=fr"
+#     ldap_user_group: "cn=user,ou=groups,dc=programmevitam, dc=fr"
+#     ldap_guest_group: "cn=guest,ou=groups,dc=programmevitam, dc=fr"
 
-# Backup tool on storage-offer
+# Backup tool on offers
 restic:
     snapshot_retention: 30 # number of snapshots to keep
     # default run backup at 23:00 everydays
@@ -316,7 +301,7 @@ restic:
         day: '*'
         month: '*'
         weekday: '*'
-    # [hosts_storage_offer_default] must be able to connect to the listed databases below to properly backup.
+    # [hosts_offer] must be able to connect to the listed databases below to properly backup.
     backup:
         # mongo-offer
         - name: "{{ offer_conf }}"

@@ -16,17 +16,12 @@ package_name: "vitam-{{ vitam_struct.vitam_component }}"
 
 vitam_worker_capacity: "{{ ansible_processor_vcpus }}"
 
-vitam_scheduler_thread_count: "{{ vitam.scheduler.schedulerThreadSize | default(3) }}"
+vitam_scheduler_thread_count: "{{ vitam.scheduler.schedulerThreadSize | default(10) }}"
 
 vitam_site_id: 1
 
 consul_business_check: "{{ vitam_defaults.consul_business_check | default(10) }}"
 consul_admin_check: "{{ vitam_defaults.consul_admin_check | default(10) }}"
-
-metrics_enabled: "{{ vitam_struct.metrics_enabled | default(true) }}"
-metricslevel: "{{ vitam_defaults.metricslevel | default('DEBUG') }}"
-metricsinterval: "{{ vitam_defaults.metricsinterval | default(3) }}"
-metricsunit: "{{ vitam_defaults.metricsunit | default('MINUTES') }}"
 
 access_retention_days: "{{ vitam_defaults.access_retention_days | default(365) }}"
 access_total_size_cap: "{{ vitam_defaults.access_total_size_cap | default('5GB') }}"
@@ -48,3 +43,14 @@ default_eliminationReportExtraFields: "{{ extendedConfiguration.default.eliminat
 default_ingestReportUnitExtraFields: "{{ extendedConfiguration.default.ingestReportUnitExtraFields | default(['PersistentIdentifier']) }}"
 default_ingestReportObjectExtraFields: "{{ extendedConfiguration.default.ingestReportObjectExtraFields | default(['PersistentIdentifier']) }}"
 default_objectGroupBlackListedFields: "{{ extendedConfiguration.default.objectGroupBlackListedFields | default(['Filename']) }}"
+
+default_vitam_force_chunk_mode: "{{ vitam_defaults.vitam_force_chunk_mode | default(false) }}"
+default_keywordMaxLength: "{{ vitam_defaults.keywordMaxLength | default(32766) }}"
+default_textMaxLength: "{{ vitam_defaults.textMaxLength | default(32766) }}"
+default_ontologyCacheMaxEntries: "{{ vitam_defaults.ontologyCacheMaxEntries | default(100) }}"
+default_ontologyCacheTimeoutInSeconds: "{{ vitam_defaults.ontologyCacheTimeoutInSeconds | default(300) }}"
+default_elasticSearchScrollTimeoutInMilliseconds: "{{ vitam_defaults.elasticSearchScrollTimeoutInMilliseconds | default(300000) }}"
+
+default_traceabilityVersion_logbookOperation: "{{ extendedConfiguration.default.traceabilityVersion.logbookOperation | default('V1') }}"
+default_traceabilityVersion_lfcUnit: "{{ extendedConfiguration.default.traceabilityVersion.lfcUnit | default('V1') }}"
+default_traceabilityVersion_lfcGot: "{{ extendedConfiguration.default.traceabilityVersion.lfcGot | default('V1') }}"

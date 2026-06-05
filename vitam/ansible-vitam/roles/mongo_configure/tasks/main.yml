@@ -4,6 +4,7 @@
   set_fact:
     mongos_list: []
     mongos_nodes: []
+  tags: update_mongodb_configuration
 
 - name: Compute the mongos server list
   set_fact:
@@ -143,6 +144,7 @@
       with_items:
         - admin
         - offer
+        - ina-tape-proxy
       no_log: "{{ hide_passwords_during_deploy }}"
       when: mongo_cluster_name != 'mongo-data'
       tags: update_mongodb_configuration

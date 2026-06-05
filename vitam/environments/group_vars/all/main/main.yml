@@ -2,7 +2,7 @@
 
 # TENANTS
 # List of active tenants
-vitam_tenant_ids: [0,1,2,3,4,5,6,7,8,9]
+vitam_tenant_ids: [0-9]
 # For functional-administration, manage master/slave tenant configuration
 # http://www.programmevitam.fr/ressources/DocCourante/html/installation/installation/21-addons.html#passage-des-identifiants-des-referentiels-en-mode-esclave
 vitam_tenants_usage_external:
@@ -87,19 +87,20 @@ vitam_elasticsearch_tenant_indexation:
   collect_grouped_tenants:
   - name: 'all'
     # Group all tenants for collect's indexes (collect_unit & collect_objectgroup)
-    tenants: "{{ vitam_tenant_ids | join(',') }}"
+    tenants: "{{ vitam_tenant_ids }}"
 
 elasticsearch:
   log:
-    index_templates:
-      default:
-        shards: 1
-        replica: 1
+    indices:
+      default_config:
+        # Default configuration if others indices (vitam or access) are undefined
+        number_of_shards: 1
+        number_of_replicas: 1
   data:
-    index_templates:
-      default:
-        shards: 1
-        replica: 2
+    indices:
+      default_config:
+        number_of_shards: 1
+        number_of_replicas: 2
 
 curator:
   indices:

@@ -24,6 +24,7 @@ server {
     }
     try_files $uri $uri/ /index.html;
   }
+{% if vitamui_struct.vitamui_component != 'ui-design-system' %}
 
   {% if vitamui_struct.vitamui_component == 'ui-identity-admin' %}
   location /identity-api {
@@ -36,11 +37,16 @@ server {
     {% endfor %}
     deny all; # Deny access to all other IP addresses
 
-    proxy_pass {{ 'https' if vitamui.api_gateway.secure | default(secure) | bool else 'http' }}://API-GATEWAY;
-    proxy_ssl_certificate {{ nginx_ssl_dir }}/{{ vitamui_struct.vitamui_component }}.crt;
-    proxy_ssl_certificate_key {{ nginx_ssl_dir }}/{{ vitamui_struct.vitamui_component }}.key;
-    proxy_ssl_session_reuse off;
+    {% if vitamui.api_gateway.secure | default(secure) | bool %}
+    set $api_gateway_dns "vitamui-{{ vitamui.api_gateway.vitamui_component }}.service.{{ consul_domain }}";
+    proxy_pass https://$api_gateway_dns:{{ vitamui.api_gateway.port_service }};
+    {% else %}
+    proxy_pass http://API-GATEWAY;
+    {% endif %}
+    proxy_ssl_certificate {{ nginx_ssl_dir }}/{{ vitamui_struct.vitamui_component }}_client.crt;
+    proxy_ssl_certificate_key {{ nginx_ssl_dir }}/{{ vitamui_struct.vitamui_component }}_client.key;
 
+    proxy_ssl_session_reuse off;
     {% if vitamui_struct.vitamui_component in [ 'ui-ingest', 'ui-collect' ] %}
     # http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_request_buffering
     # The request body is sent to the proxied server immediately as it is received.
@@ -52,6 +58,17 @@ server {
     # Please be aware that browsers cannot correctly display this error.
     # Setting size to 0 disables checking of client request body size.
     client_max_body_size 0;
+
+    # Increase send timeout to allow the upstream more time to consume the stream.
+    # This prevents "Early EOF" errors during large uploads if the backend slows down.
+    # Note: This is a timeout between two successive write operations, not for the total duration.
+    proxy_send_timeout 600s;
+
+    # Increase read timeout to allow the backend to process the file after the upload is complete.
+    # Essential for large ZIPs where post-upload tasks can take some time.
+    # Note: This is a timeout between two successive read operations from the upstream.
+    proxy_read_timeout 600s;
     {% endif %}
   }
+{% endif %}
 }

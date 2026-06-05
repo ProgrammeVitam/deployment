@@ -1,14 +1,25 @@
 ---
+- hosts: hosts_offer
+  any_errors_fatal: true
+  roles:
+    - role: vitam
+      when: >
+        (vitam_offers[hostvars[inventory_hostname]['offer_conf']] | default({}))
+        .get('tapeLibraryConfiguration', {})
+        .get('mode', '') == 'ina'
+  vars:
+    vitam_struct: "{{ vitam.ina_tape_proxy }}"
+  tags: offer
 
-- hosts: hosts_storage_offer_default
+- hosts: hosts_offer
   any_errors_fatal: true
   roles:
     - vitam
   vars:
-    vitam_struct: "{{ vitam.storageofferdefault }}"
+    vitam_struct: "{{ vitam.offer }}"
     password_keystore: "{{ keystores.server.offer }}"
     password_manager_keystore: "{{ keystores.server.offer }}"
     password_truststore: "{{ truststores.client_storage }}"
     password_grantedstore: "{{ grantedstores.client_storage }}"
-    vitam_certificate_client_type: "storage"
+    vitam_certificate_client_type: storage
   tags: offer

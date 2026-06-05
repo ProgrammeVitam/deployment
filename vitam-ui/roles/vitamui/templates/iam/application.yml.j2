@@ -1,19 +1,18 @@
 #jinja2: lstrip_blocks: True
 spring:
   application:
-    name: iam
-    version: 'VitamUI'
+    name: vitamui-{{ vitamui_struct.vitamui_component }}
   cloud:
     consul:
       enabled: true
       host: {{ hostvars[inventory_hostname][consul.network] if (inventory_hostname in groups['hosts_vitamui_consul_server'] or inventory_hostname in groups['hosts_consul_server']) else 'localhost' }}
       discovery:
-        serviceName: vitamui-{{ vitamui_struct.vitamui_component }}
+        serviceName: ${spring.application.name}
         preferIpAddress: true
         ipAddress: ${server.address}
         healthCheckUrl: http://${management.server.address}:${management.server.port}/actuator/health
-        tags: {{ consul_tags }}
-        instanceId: {{ vitamui_struct.vitamui_component }}-${server.port}-${spring.cloud.client.hostname}
+        tags: vitamui, {{ vitamui_struct.vitamui_component }}
+        instanceId: ${spring.application.name}-${spring.cloud.client.hostname}-${server.port}
   data:
     mongodb:
       uri: "mongodb://{{ mongodb.iam.user }}:{{ mongodb.iam.password }}@{{ mongodb.host }}:{{ mongodb.mongod_port }}/{{ mongodb.iam.db }}?replicaSet={{ mongod_replicaset_name }}&connectTimeoutMS={{ mongod_client_connect_timeout_ms }}"
@@ -26,13 +25,13 @@ logging:
 server:
   address: {{ ip_service }}
   port: {{ vitamui_struct.port_service }}
-{% if vitamui_struct.secure | default(secure) | bool == true %}
+{% if vitamui_struct.secure | default(secure) | bool %}
   ssl:
-    key-store: {{ vitamui_folder_conf }}/keystore_{{ vitamui_struct.service_name | default(service_name) }}.jks
-    key-store-password: {{ password_keystore }}
-    key-password: {{ password_keystore }}
-    trust-store: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
-    trust-store-password: {{ password_truststore }}
+    key-store: {{ vitamui_folder_conf }}/keystore_server_{{ vitamui_struct.vitamui_component }}.p12
+    key-store-password: {{ keystore_vitamui_services_servers_iam }}
+    # key-password: {{ keystore_vitamui_services_servers_iam }}
+    trust-store: {{ vitamui_folder_conf }}/truststore_vitamui-services.p12
+    trust-store-password: {{ truststore_vitamui_services }}
     client-auth: want
     client-certificate-header-name: {{ vitamui.api_gateway.client_certificate_header_name | default('x-ssl-cert') }}
 {% endif %}
@@ -57,6 +56,14 @@ management:
     port: {{ vitamui_struct.port_admin }}
     ssl:
       enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      hostname: {{ inventory_hostname }}
 
 gateway:
   enabled: true
@@ -65,13 +72,13 @@ iam:
   security-client:
     server-host: {{ vitamui.security.host }}
     server-port: {{ vitamui.security.port_service }}
-{% if vitamui.security.secure | default(secure) | bool == true %}
+{% if vitamui.security.secure | default(secure) | bool %}
     secure: true
     ssl-configuration:
       truststore:
-        key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
-        key-password: {{ password_truststore }}
-      hostname-verification: true
+        key-path: {{ vitamui_folder_conf }}/truststore_vitamui-services.p12
+        key-password: {{ truststore_vitamui_services }}
+      hostname-verification: {{ vitamui_struct.ssl_hostname_verification | default(ssl_hostname_verification) | bool | lower }}
 {% endif %}
 
 list-enable-external-identifiers:
@@ -97,18 +104,21 @@ login:
 cas-client:
   server-host: {{ vitamui.cas_server.host }}
   server-port: {{ vitamui.cas_server.port_service }}
-{% if vitamui.cas_server.secure | default(secure) | bool == true %}
+{% if vitamui.cas_server.secure | default(secure) | bool %}
   secure: true
   ssl-configuration:
+    keystore:
+      key-path: {{ vitamui_folder_conf }}/keystore_client_{{ vitamui_struct.vitamui_component }}.p12
+      key-password: {{ keystore_vitamui_services_clients_iam }}
     truststore:
-      key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
-      key-password: {{ password_truststore }}
-    hostname-verification: true
+      key-path: {{ vitamui_folder_conf }}/truststore_vitamui-services.p12
+      key-password: {{ truststore_vitamui_services }}
+    hostname-verification: {{ vitamui_struct.ssl_hostname_verification | default(ssl_hostname_verification) | bool | lower }}
 {% endif %}
 
 cas.reset.password.url: {{ vitamui.cas_server.base_url | default('/cas') }}{{ vitamui.cas_server.reset_password_url | default('/extras/resetPassword?username={username}&firstname={firstname}&lastname={lastname}&language={language}&customerId={customerId}&ttl=1day') }}
 cas.tenant.identifier: {{ vitamui_platform_informations.cas_tenant }}
-cas.secret.token: {{ vitamui.cas_server.secret_token }}
+cas_secret_token: {{ vitamui.cas_server.secret_token }}
 
 login.attempts.maximum.failures: {{ vitamui_struct.login_max_failure | default(5) }}
 login.attempts.time.interval: {{ vitamui_struct.login_interval|default(20) }}

@@ -131,7 +131,6 @@ hosts_vitamui_mongod
 #  - mongo_rs_bootstrap=true (default: false); mandatory for 1 node of the shard, some init commands will be executed on it
 #  - mongo_cluster_name=mongo-vitamui (default: mongo-vitamui)
 #  - mongo_shard_id=0 (default: 0)
-#  - mongo_arbiter=true ; the node will be only an arbiter, it will not store data ; do not add this parameter on a mongo_rs_bootstrap node, maximum 1 node per shard
 #  - mongod_memory=x (default: unset); this will force the wiredtiger cache size to x (unit is GB)
 #  - is_small=true (default: false); this will force the priority for this server to be lower when electing master ; hardware can be downgraded for this machine
 #  - mongo_express_enabled=true to deploy mongo_express (default: false)
@@ -150,7 +149,7 @@ hosts_vitamui_logstash
 hosts_vitamui_consul_server
 
 [hosts_vitamui_logstash]
-# EDIT: Optionnal
+# EDIT: Optional
 # Add nodes in this group if you want to start a dedicated logstash cluster for vitamui
 # otherwise leave this group empty (by default logs will be sent to vitam's logstash cluster)
 
@@ -169,6 +168,7 @@ hosts_vitamui_consul_server
 hosts_consul_server
 hosts_elasticsearch_log
 hosts_logstash
+hosts_prometheus
 reverse
 
 # MINIMUM REQUIRED IN ZONE VITAM
@@ -182,8 +182,11 @@ reverse
 [hosts_logstash]
 # EDIT: Mandatory when 'syslog.name: filebeat' is used and [hosts_vitamui_logstash] is not defined
 
+[hosts_prometheus]
+# EDIT: Optional used for deploying scraping configurations for VitamUI Components
+
 [reverse]
-# EDIT: Optionnal
+# EDIT: Optional
 # This group need vitam_reverse_external_dns variable to be configured
 # WARNING: Do not use in production environments
 # WARNING: Do not collocate with [hosts_vitamui_reverseproxy]
@@ -194,7 +197,7 @@ reverse
 # ZONE TOOLS
 ################################################################################
 [hosts_browse]
-# EDIT: Optionnal
+# EDIT: Optional
 # WARNING: Do not use in production environments
 
 

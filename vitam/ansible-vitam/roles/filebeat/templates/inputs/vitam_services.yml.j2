@@ -22,8 +22,10 @@
     - dissect:
         tokenizer: '%{client_ip|ip} - - %{date_time} "%{http_method} %{request_path} HTTP/%{http_version}" %{http_status_code|integer} %{response_size} "%{referer}" "%{user_agent}" %{duration|integer} %{request_id} %{tenant_id} %{application_id}'
         target_prefix: ""
+        trim_values: all
     - timestamp:
         field: date_time
+        timezone: {{ filebeat.timezone | default('Europe/Paris') }}
         layouts:
           - '2006-01-02 15:04:05,000'
         test:
@@ -64,6 +66,7 @@
         trim_values: all
     - timestamp:
         field: date_time
+        timezone: {{ filebeat.timezone | default('Europe/Paris') }}
         layouts:
           - '2006-01-02 15:04:05,000'
         test:
@@ -99,6 +102,7 @@
         trim_values: all
     - timestamp:
         field: date_time
+        timezone: {{ filebeat.timezone | default('Europe/Paris') }}
         layouts:
           - '2006-01-02 15:04:05,000'
         test:

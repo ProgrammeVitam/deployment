@@ -9,7 +9,7 @@ install_mode: legacy
 # vitam_repositories:
 #   - key: repo1 # Mandatory: Only on RedHat family (AlmaLinux or RockyLinux)
 #     value: http://path_to_repo1 # Mandatory: Path to the repository
-#     gpgcheck: 1 # Optionnal: Default to 0 (equivalent as [trusted=yes] on Debian)
+#     gpgcheck: true # Optionnal: Default to false (equivalent as [trusted=yes] on Debian)
 #     gpgkey: path_to_custom_key # Optionnal: Only if gpgcheck is enabled; Default to official Vitam GPG Key
 #     subtree: "./" # Optionnal: Only on Debian; Default to ./
 #     proxy: http://proxy_url # Optionnal: Only on RedHat family (AlmaLinux or RockyLinux); Default to _none_
@@ -20,4 +20,10 @@ install_mode: legacy
 #   username:
 #   password:
 # Add vitam_container_version for specific container version deployment (default: latest)
-vitam_container_version: '9.0.0'
+vitam_container_version: '9.1.0'
+
+# List of components to install in legacy mode when install_mode == 'container'
+legacy_components_list:
+  - antivirus
+  - worker # Mandatory when vitam_griffins are defined
+  - library
