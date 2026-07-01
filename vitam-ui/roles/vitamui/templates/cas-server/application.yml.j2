@@ -63,7 +63,7 @@ iam-client:
     truststore:
       key-path: {{ vitamui_folder_conf }}/truststore_{{ vitamui_certificate_type }}.jks
       key-password: {{ password_truststore }}
-    hostname-verification: true
+    hostname-verification: {{ vitamui_struct.ssl_hostname_verification | default(ssl_hostname_verification) | bool | lower }}
 {% endif %}
 
 cas.authn.accept.users:
@@ -167,7 +167,7 @@ mfa.sms.sender: "{{ sms.sender }}"
 
 vitamui.portal.url: {{ vitamui.ui_portal.base_url | default(url_prefix) }}
 
-cas.secret.token: {{ vitamui.cas_server.secret_token }}
+cas_secret_token: {{ vitamui.cas_server.secret_token }}
 
 ip.header: X-Real-IP
 
